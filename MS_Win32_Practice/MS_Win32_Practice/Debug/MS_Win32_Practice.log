@@ -1,0 +1,9 @@
+﻿  BaseWindow.cpp
+  main.cpp
+  MainWindow.cpp
+  코드를 생성하고 있습니다...
+main.obj : error LNK2019: "public: __thiscall base::BaseWindow<class base::MainWindow>::BaseWindow<class base::MainWindow>(void)" (??0?$BaseWindow@VMainWindow@base@@@base@@QAE@XZ)"public: __thiscall base::MainWindow::MainWindow(void)" (??0MainWindow@base@@QAE@XZ) 함수에서 참조되는 확인할 수 없는 외부 기호
+main.obj : error LNK2019: "public: int __thiscall base::BaseWindow<class base::MainWindow>::Create(wchar_t const *,unsigned long,unsigned long,int,int,int,int,struct HWND__ *,struct HMENU__ *)" (?Create@?$BaseWindow@VMainWindow@base@@@base@@QAEHPB_WKKHHHHPAUHWND__@@PAUHMENU__@@@Z)"int __stdcall base::wWinMain(struct HINSTANCE__ *,struct HINSTANCE__ *,wchar_t *,int)" (?wWinMain@base@@YGHPAUHINSTANCE__@@0PA_WH@Z) 함수에서 참조되는 확인할 수 없는 외부 기호
+main.obj : error LNK2019: "public: struct HWND__ * __thiscall base::BaseWindow<class base::MainWindow>::Window(void)const " (?Window@?$BaseWindow@VMainWindow@base@@@base@@QBEPAUHWND__@@XZ)"int __stdcall base::wWinMain(struct HINSTANCE__ *,struct HINSTANCE__ *,wchar_t *,int)" (?wWinMain@base@@YGHPAUHINSTANCE__@@0PA_WH@Z) 함수에서 참조되는 확인할 수 없는 외부 기호
+MSVCRTD.lib(exe_main.obj) : error LNK2019: _main"int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ) 함수에서 참조되는 확인할 수 없는 외부 기호
+C:\Users\elddy\Documents\GitHub\DX_Study\MS_Win32_Practice\Debug\MS_Win32_Practice.exe : fatal error LNK1120: 4개의 확인할 수 없는 외부 참조입니다.

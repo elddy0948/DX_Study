@@ -1,0 +1,7 @@
+﻿  BaseWindow.cpp
+  MainWindow.cpp
+  main.cpp
+  Generating Code...
+main.obj : error LNK2019: unresolved external symbol "public: __cdecl base::BaseWindow<class base::MainWindow>::BaseWindow<class base::MainWindow>(void)" (??0?$BaseWindow@VMainWindow@base@@@base@@QEAA@XZ) referenced in function "public: __cdecl base::MainWindow::MainWindow(void)" (??0MainWindow@base@@QEAA@XZ)
+main.obj : error LNK2019: unresolved external symbol "public: int __cdecl base::BaseWindow<class base::MainWindow>::Create(wchar_t const *,unsigned long,unsigned long,int,int,int,int,struct HWND__ *,struct HMENU__ *)" (?Create@?$BaseWindow@VMainWindow@base@@@base@@QEAAHPEB_WKKHHHHPEAUHWND__@@PEAUHMENU__@@@Z) referenced in function wWinMain
+C:\Users\elddy\Documents\GitHub\DX_Study\MS_Win32_Practice\x64\Debug\MS_Win32_Practice.exe : fatal error LNK1120: 2 unresolved externals
