@@ -1,5 +1,4 @@
 #pragma once
-
 #include <Windows.h>
 
 namespace base 
@@ -20,7 +19,7 @@ namespace base
 			HWND hWndParent = 0,
 			HMENU hMenu = 0);
 
-		HWND Window() const { return m_hwnd; };
+		HWND Window() const;
 	protected:
 		virtual PCWSTR ClassName() const = 0;
 		virtual LRESULT HandleMessage(

@@ -1,8 +1,9 @@
 #include "MainWindow.h"
-#include "BaseWindow.h"
 
 namespace base
 {
+	MainWindow::MainWindow() : BaseWindow(){}
+	PCWSTR MainWindow::ClassName() const { return L"Sample Window Class"; }
 	LRESULT MainWindow::HandleMessage(
 		UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{

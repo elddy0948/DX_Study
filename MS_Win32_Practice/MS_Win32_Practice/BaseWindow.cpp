@@ -31,8 +31,12 @@ namespace base
 		}
 	}
 
-	template <class DERIVED_TYPE>
-	BaseWindow<DERIVED_TYPE>::BaseWindow() : m_hwnd(NULL) {}
+	BaseWindow<class DERIVED_TYPE>::BaseWindow() : m_hwnd(NULL) {}
+
+	HWND BaseWindow<class DERIVED_TYPE>::Window() const
+	{
+		return m_hwnd;
+	}
 
 	template <class DERIVED_TYPE>
 	BOOL BaseWindow<DERIVED_TYPE>::Create(

@@ -1,8 +1,7 @@
+//#include <Windows.h>
 #include "MainWindow.h"
-#include "BaseWindow.h"
 
-
-int WINAPI wWinMain(
+int CALLBACK wWinMain(
 	HINSTANCE hInstance, HINSTANCE,
 	PWSTR pCmdLine,
 	int nCmdShow)

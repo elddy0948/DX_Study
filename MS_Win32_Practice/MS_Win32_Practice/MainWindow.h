@@ -7,7 +7,8 @@ namespace base
 	class MainWindow : public BaseWindow<MainWindow>
 	{
 	public:
-		PCWSTR ClassName() const { return L"Sample Window Class"; }
+		MainWindow();
+		PCWSTR ClassName() const;
 		LRESULT HandleMessage(
 			UINT uMsg, WPARAM wParam, LPARAM lParam);
 	};
