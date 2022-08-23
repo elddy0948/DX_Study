@@ -7,7 +7,6 @@ int CALLBACK WinMain(
 	int nShowCmd
 )
 {
-
 	//Create Windows
 	WNDCLASSEX wc{ 0 };
 
@@ -31,12 +30,20 @@ int CALLBACK WinMain(
 	hWnd = CreateWindowExA(
 		0, "JoonsEngine",
 		"Joons Engine Window",
-		WS_CAPTION | WS_MINIMIZEBOX | WS_CAPTION,
+		WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
 		200, 200,
 		600, 400,
 		NULL, NULL, hInstance, NULL);
 
 	ShowWindow(hWnd, SW_SHOW);
 
-	while (true);
+	MSG msg;
+
+	while (GetMessage(&msg, hWnd, 0, 0) > 0)
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+	
+	return 0;
 }
