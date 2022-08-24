@@ -11,7 +11,7 @@ private:
 public:
   void InitMembers(int price, int num, int money);
   int SaleApples(int money);
-  void ShowSalesResult();
+  void ShowSalesResult() const;
 };
 
 #endif
