@@ -5,11 +5,9 @@
 
 int main(void)
 {
-  FruitSeller seller;
-  seller.InitMembers(1000, 20, 0);
+  FruitSeller seller(1000, 20, 0);
 
-  FruitBuyer buyer;
-  buyer.InitMembers(5000);
+  FruitBuyer buyer(5000);
   buyer.BuyApples(seller, 2000);
 
   std::cout << "seller info : " << std::endl;

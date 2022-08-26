@@ -2,12 +2,13 @@
 
 #include <iostream>
 
-void FruitBuyer::InitMembers(int money)
+FruitBuyer::FruitBuyer(int money)
 {
   myMoney = money;
   numOfApples = 0;
   return;
 }
+
 void FruitBuyer::BuyApples(FruitSeller &seller, int money)
 {
   if (0 > money)

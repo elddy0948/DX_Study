@@ -10,7 +10,7 @@ private:
   int numOfApples;
 
 public:
-  void InitMembers(int money);
+  FruitBuyer(int money);
   void BuyApples(FruitSeller &seller, int money);
   void ShowBuyResult() const;
 };
