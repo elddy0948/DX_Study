@@ -2,22 +2,16 @@
 #include "rectangle.h"
 using namespace std;
 
-bool Rectangle::InitMembers(const Point &upLeft, const Point &lowRight)
+Rectangle::Rectangle(const int &x1, const int &y1, const int &x2, const int &y2)
+    : upLeft(x1, y1), lowRight(x2, y2)
 {
-  if ((upLeft.GetX() > lowRight.GetX()) || (upLeft.GetY() > lowRight.GetY()))
-  {
-    cout << "잘못된 위치정보 전달" << endl;
-    return false;
-  }
-  this->upLeft = upLeft;
-  this->lowRight = lowRight;
-  return true;
+  // Empty
 }
 
 void Rectangle::ShowRectInfo() const
 {
-  cout << "좌 상단 : " << '[' << upLeft.GetX() << ',';
+  cout << "Up Left : " << '[' << upLeft.GetX() << ',';
   cout << upLeft.GetY() << ']' << endl;
-  cout << "우 하단 : " << '[' << lowRight.GetX() << ',';
+  cout << "Low Right : " << '[' << lowRight.GetX() << ',';
   cout << lowRight.GetY() << ']' << endl;
 }

@@ -10,7 +10,7 @@ private:
   Point lowRight;
 
 public:
-  bool InitMembers(const Point &upLeft, const Point &lowRight);
+  Rectangle(const int &x1, const int &y1, const int &x2, const int &y2);
   void ShowRectInfo() const;
 };
 
