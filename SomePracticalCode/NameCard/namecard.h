@@ -23,6 +23,7 @@ public:
       const std::string phoneNumber,
       const int position);
   ~NameCard();
+  NameCard(const NameCard &copy);
   void ShowNameCardInfo();
 
 private:

@@ -31,6 +31,14 @@ NameCard::~NameCard()
   std::cout << "Destructor!" << std::endl;
 }
 
+NameCard::NameCard(const NameCard &copy)
+    : name(copy.name),
+      company(copy.company),
+      phoneNumber(copy.phoneNumber),
+      position(copy.position)
+{
+}
+
 void NameCard::ShowNameCardInfo()
 {
   std::cout << "Name : " << name << std::endl;
