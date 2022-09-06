@@ -8,12 +8,21 @@ class MyClass
 {
 private:
   static int classCounter;
+  int someVar = 0;
+  const static int initializeInteger = 0;
 
 public:
   MyClass()
   {
     classCounter++;
     cout << classCounter << " MyClass ! " << endl;
+  }
+
+  static void MyFunc()
+  {
+    // someVar++; // error!
+    classCounter++;
+    return;
   }
 };
 
