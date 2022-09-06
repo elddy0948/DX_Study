@@ -78,9 +78,9 @@ int main(void)
 
 ```mermaid
 graph BT;
-  m1 --> classCounter;
-  m2 --> classCounter;
-  MyClass() --> lassCounter;
+    m1-->classCounter;
+    m2-->classCounter;
+    MyClass_call-->classCounter;
 ```
 
 ## static 멤버 함수
