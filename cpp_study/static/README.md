@@ -77,10 +77,10 @@ int main(void)
 라는 결과가 나옵니다. 마치 classCounter라는 전역변수를 두고, 카운터를 증가시킨것과 똑같은 결과를 만들어줍니다!
 
 ```mermaid
-graph BT
-  m1 --> classCounter
-  m2 --> classCounter
-  MyClass() --> lassCounter
+graph BT;
+  m1 --> classCounter;
+  m2 --> classCounter;
+  MyClass() --> lassCounter;
 ```
 
 ## static 멤버 함수
