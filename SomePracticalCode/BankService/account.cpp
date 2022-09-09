@@ -1,61 +1,52 @@
+#include "account.h"
+
 #include <iostream>
 #include <cstring>
 
-using namespace std;
-
-class Account
+Account::Account(int id, int money, char *name)
+    : accountID(id),
+      balance(money)
 {
-private:
-  int accountID;
-  int balance;
-  char *customerName;
+  customerName = new char[strlen(name) + 1];
+  strcpy(customerName, name);
+}
 
-public:
-  Account(int ID, int money, char *name)
-      : accountID(ID),
-        balance(money)
-  {
-    customerName = new char[strlen(name) + 1];
-    strcpy(customerName, name);
-  }
+Account::Account(const Account &ref)
+    : accountID(ref.accountID),
+      balance(ref.balance)
+{
+  customerName = new char[strlen(ref.customerName) + 1];
+  strcpy(customerName, ref.customerName);
+}
 
-  Account(const Account &ref)
-      : accountID(ref.accountID),
-        balance(ref.balance)
-  {
-    customerName = new char[strlen(ref.customerName) + 1];
-    strcpy(customerName, ref.customerName);
-  }
+Account::~Account()
+{
+  delete[] customerName;
+}
 
-  int GetAccountID() const
-  {
-    return accountID;
-  }
+int Account::GetAccountID() const
+{
+  return accountID;
+}
 
-  void Deposit(int money)
-  {
-    balance += money;
-  }
+void Account::Deposit(int money)
+{
+  balance += money;
+}
 
-  int Withdraw(int money)
+int Account::Withdraw(int money)
+{
+  if (balance < money)
   {
-    if (balance < money)
-    {
-      return 0;
-    }
-    balance -= money;
-    return money;
+    return 0;
   }
+  balance -= money;
+  return money;
+}
 
-  void ShowAccountInfo() const
-  {
-    cout << "Account ID : " << accountID << endl;
-    cout << "Name : " << customerName << endl;
-    cout << "Balance : " << balance << endl;
-  }
-
-  ~Account()
-  {
-    delete[] customerName;
-  }
-};
+void Account::ShowAccountInfo() const
+{
+  std::cout << "Account ID : " << accountID << std::endl;
+  std::cout << "Name : " << customerName << std::endl;
+  std::cout << "Balance : " << balance << std::endl;
+}
