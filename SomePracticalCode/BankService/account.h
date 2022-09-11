@@ -1,3 +1,5 @@
+#pragma once
+
 /*
   Account
   Entity Class
