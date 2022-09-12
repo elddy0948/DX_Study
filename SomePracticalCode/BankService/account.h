@@ -22,3 +22,15 @@ private:
   int balance;
   char *customerName;
 };
+
+namespace MENU_CONST
+{
+  enum
+  {
+    MAKE = 1,
+    DEPOSIT,
+    WITHDRAW,
+    INQUIRE,
+    EXIT
+  };
+};
