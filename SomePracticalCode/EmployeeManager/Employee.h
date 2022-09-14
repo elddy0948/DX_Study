@@ -7,7 +7,7 @@ private:
 
 public:
   Employee(char *name);
-  virtual int GetPay() const;
-  virtual void ShowSalaryInfo() const;
+  virtual int GetPay() const = 0;
+  virtual void ShowSalaryInfo() const = 0;
   void ShowYourName() const;
 };
