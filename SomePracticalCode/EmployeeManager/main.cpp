@@ -2,6 +2,7 @@
 #include "TemporaryWorker.h"
 #include "SalesWorker.h"
 #include "EmployeeHandler.h"
+#include "ForeignSalesWorker.h"
 
 #include <iostream>
 #include <cstring>
@@ -19,9 +20,13 @@ int main(void)
   alba->AddWorkTime(5);
   handler.AddEmployee(alba);
 
-  SalesWorker *seller = new SalesWorker("Hong", 1000, 0.1);
-  seller->AddSalesResult(7000);
-  handler.AddEmployee(seller);
+  ForeignSalesWorker *fseller1 = new ForeignSalesWorker("Hong", 1000, 0.1, RISK_LEVEL::RISK_A);
+  fseller1->AddSalesResult(7000);
+  handler.AddEmployee(fseller1);
+
+  ForeignSalesWorker *fseller2 = new ForeignSalesWorker("Yoon", 1000, 0.1, RISK_LEVEL::RISK_B);
+  fseller2->AddSalesResult(7000);
+  handler.AddEmployee(fseller2);
 
   handler.ShowAllSalaryInfo();
 
