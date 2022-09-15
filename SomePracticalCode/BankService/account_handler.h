@@ -14,6 +14,10 @@ public:
   void WithdrawMoney(void);
   void ShowAllAccountInfo(void) const;
 
+protected:
+  void MakeNormalAccount(void);
+  void MakeCreditAccount(void);
+
 private:
   Account *accountArray[100];
   int accountNumber;

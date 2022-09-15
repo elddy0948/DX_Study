@@ -13,7 +13,7 @@ public:
   ~Account();
 
   int GetAccountID() const;
-  void Deposit(int money);
+  virtual void Deposit(int money);
   int Withdraw(int money);
   void ShowAccountInfo() const;
 
@@ -32,5 +32,24 @@ namespace MENU_CONST
     WITHDRAW,
     INQUIRE,
     EXIT
+  };
+};
+
+namespace LEVEL_CONST
+{
+  enum
+  {
+    LEVEL_A = 7,
+    LEVEL_B = 4,
+    LEVEL_C = 2
+  };
+};
+
+namespace ACCOUNT_CONST
+{
+  enum
+  {
+    NORMAL = 1,
+    CREDIT = 2
   };
 };
