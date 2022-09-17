@@ -33,10 +33,34 @@ public:
     return *this;
   }
 
+  Point &operator++()
+  {
+    xPos += 1;
+    yPos += 1;
+    return *this;
+  }
+
+  Point operator-()
+  {
+    Point pos(-xPos, -yPos);
+    return pos;
+  }
+
+  const Point operator++(int)
+  {
+    const Point retobj(xPos, yPos);
+    xPos += 1;
+    yPos += 1;
+    return retobj;
+  }
+
   friend Point operator+(const Point &pos1, const Point &pos2);
   friend Point operator-(const Point &pos1, const Point &pos2);
   friend bool operator==(const Point &pos1, const Point &pos2);
   friend bool operator!=(const Point &pos1, const Point &pos2);
+  friend Point &operator--(Point &ref);
+  friend Point &operator~(Point &ref);
+  friend const Point operator--(Point &ref, int);
 };
 
 Point operator+(const Point &pos1, const Point &pos2)
@@ -67,6 +91,27 @@ bool operator!=(const Point &pos1, const Point &pos2)
     return true;
   }
   return false;
+}
+
+Point &operator--(Point &ref)
+{
+  ref.xPos -= 1;
+  ref.yPos -= 1;
+  return ref;
+}
+
+Point &operator~(Point &ref)
+{
+  Point pos(ref.yPos, ref.xPos);
+  return pos;
+}
+
+const Point operator--(Point &ref, int)
+{
+  const Point retobj(ref);
+  ref.xPos -= 1;
+  ref.yPos -= 1;
+  return retobj;
 }
 
 int main()
