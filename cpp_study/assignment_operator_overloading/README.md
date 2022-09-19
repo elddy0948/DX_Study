@@ -112,3 +112,38 @@ Joons
 ```
 
 이렇게 대입 연산자 오버로딩을 사용하면 코드가 정상적으로 동작하는것을 확인할 수 있습니다.
+
+## 이니셜라이저를 통한 성능 향상
+
+이니셜라이저를 사용 하고 안하고의 차이를 확인해보겠습니다.
+
+```cpp
+class BBB
+{
+private:
+  AAA mem;
+public:
+  BBB(const AAA& ref) : mem(ref) {}
+};
+
+class CCC
+{
+private:
+  AAA mem;
+public:
+  CCC(const AAA& ref) { mem = ref; }
+};
+```
+
+위의 `BBB`, `CCC` 클래스는 각각 이니셜라이저를 사용한 클래스, 하지 않은 클래스입니다.
+
+```cpp
+AAA objA();
+BBB objB(objA);
+CCC objC(objA);
+```
+
+이런식으로 생성하면, BBB는, AAA의 복사생성자 `AAA(const AAA& ref)`만 호출되는 것을 확인할 수 있고,
+CCC의 경우는 `AAA(int n=0)` 그리고 `operator=(const AAA& ref)` 이렇게 생성자 하나와 대입 연산자까지 호출되는 것을 확인할 수 있습니다.
+
+이니셜라이저를 사용하면 선언과 동시에 초기화가 이루어지는 형태로 바이너리 코드가 생성되기 때문에, 이니셜라이저를 사용한다면, 좀 더 성능에서 이점을 가져갈 수 있습니다.
