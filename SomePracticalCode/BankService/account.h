@@ -10,6 +10,7 @@ class Account
 public:
   Account(int id, int money, char *name);
   Account(const Account &ref);
+  Account &operator=(const Account &ref);
   ~Account();
 
   int GetAccountID() const;
