@@ -4,6 +4,8 @@ class Book
 {
 public:
   Book(const char *title, const char *isbn, int price);
+  Book(const Book &ref);
+  Book &operator=(const Book &ref);
   ~Book();
   void ShowBookInfo();
 

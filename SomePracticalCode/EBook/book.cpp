@@ -13,6 +13,31 @@ Book::Book(const char *title, const char *isbn, int price)
   strcpy(this->isbn, isbn);
 }
 
+Book::Book(const Book &ref)
+    : price(ref.price)
+{
+  title = new char[strlen(ref.title) + 1];
+  isbn = new char[strlen(ref.isbn) + 1];
+
+  strcpy(title, ref.title);
+  strcpy(isbn, ref.isbn);
+}
+
+Book &Book::operator=(const Book &ref)
+{
+  delete[] title;
+  delete[] isbn;
+
+  title = new char[strlen(ref.title) + 1];
+  isbn = new char[strlen(ref.isbn) + 1];
+
+  strcpy(title, ref.title);
+  strcpy(isbn, ref.isbn);
+  price = ref.price;
+
+  return *this;
+}
+
 Book::~Book()
 {
   delete[] title;
