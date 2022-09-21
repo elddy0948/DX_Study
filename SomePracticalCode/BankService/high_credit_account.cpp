@@ -1,7 +1,7 @@
 #include "high_credit_account.h"
 
 HighCreditAccount::HighCreditAccount(
-    int ID, int money, char *name, int rate, int special)
+    int ID, int money, String name, int rate, int special)
     : NormalAccount(ID, money, name, rate),
       specialRate(special)
 {

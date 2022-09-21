@@ -1,17 +1,15 @@
 #pragma once
 
-/*
-  Account
-  Entity Class
-*/
+#include "StringClass.h"
 
 class Account
 {
 public:
-  Account(int id, int money, char *name);
-  Account(const Account &ref);
-  Account &operator=(const Account &ref);
-  ~Account();
+  Account(int id, int money, String name);
+  // Account(int id, int money, char *name);
+  // Account(const Account &ref);
+  // Account &operator=(const Account &ref);
+  // ~Account();
 
   int GetAccountID() const;
   virtual void Deposit(int money);
@@ -21,5 +19,6 @@ public:
 private:
   int accountID;
   int balance;
-  char *customerName;
+  // char *customerName;
+  String customerName;
 };

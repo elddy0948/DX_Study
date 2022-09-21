@@ -1,7 +1,7 @@
 #include "normal_account.h"
 
 NormalAccount::NormalAccount(
-    int ID, int money, char *name, int rate)
+    int ID, int money, String name, int rate)
     : Account(ID, money, name),
       interRate(rate)
 {
