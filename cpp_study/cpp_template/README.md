@@ -1,4 +1,4 @@
-# Template01
+# Template
 
 ## 함수 템플릿
 
