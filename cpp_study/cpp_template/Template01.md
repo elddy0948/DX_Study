@@ -152,3 +152,93 @@ class A<T1, int> { ... } // 부분 특수화
 **호출이될때에는 전체 특수화가 부분 특수화보다 우선시됩니다.**
 
 ## 템플릿 인자
+
+```cpp
+template <typename T>
+```
+
+에서 `T`는 '템플릿 매개변수'를 뜻하고, 여기에 들어오는 자료형을 '템플릿 인자' 라고 합니다.
+
+템플릿 매개변수에는 변수의 선언이 올 수 있습니다.
+
+```cpp
+template <typename T, int len>
+class A { ... };
+
+int main()
+{
+  A<int, 5> a;
+}
+```
+
+위와 같은 형식으로 사용될 수 있고, 여기서 상수가 달라지면 서로 다른 자료형을 가진것이 됩니다.
+즉, `A<int, 5> != A<int, 7>` 이라는 의미입니다.
+
+### 디폴트 값 지정
+
+디폴트 값도 지정 가능합니다.
+
+```cpp
+template <typename T = int, int len = 5>
+class A { ... };
+
+int main()
+{
+  A<> a;
+}
+```
+
+디폴트 값을 사용하더라도 `<>`는 꼭 붙여주어야 합니다.
+
+## 템플릿과 static
+
+### 함수 템플릿 static
+
+결론부터 말하면, 함수 템플릿의 `static` 지역 변수는 **템플릿 함수별로 각각 존재**하게 됩니다.
+
+```cpp
+template <typename T>
+void Show()
+{
+  static T num = 0;
+}
+
+void Show<int>()
+{
+  static int num = 0;
+}
+
+void Show<double>()
+{
+  static double num = 0;
+}
+```
+
+### 클래스 템플릿 static
+
+함수 템플릿과 마찬가지로, 각 클래스 별로 `static` 멤버 변수를 유지하게 됩니다.
+
+## typename T vs ' '
+
+템플릿을 쓰다보면
+
+```cpp
+template <typename T>
+
+template <>
+```
+
+이 두가지를 볼 수 있습니다. 각각은 과연 언제 사용되어야 할까요?
+
+우선 `typename T`같은 경우에는 템플릿 정의이긴 한데, T라는 타입을 사용해야할 때 사용되어야 합니다.
+
+```cpp
+template <typename T>
+T A<T>::num = 0;
+```
+
+다음 빈칸으로 두는 경우에는 템플릿 정의이긴 한데, T라는 타입은 필요없고, 이미 자료형이 정의되어있는 것을 나타낼 때 사용합니다.
+
+```cpp
+long A<long>::num = 0;
+```
