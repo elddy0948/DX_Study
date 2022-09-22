@@ -1,7 +1,7 @@
 #pragma once
 
 #include "account.h"
-#include "account_array.h"
+#include "BoundCheckArray.h"
 
 class AccountHandler
 {
@@ -20,6 +20,6 @@ protected:
   void MakeCreditAccount(void);
 
 private:
-  BoundCheckAccountPtrArray accountArray;
+  BoundCheckArray<Account *> accountArray;
   int accountNumber;
 };
