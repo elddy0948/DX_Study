@@ -82,3 +82,73 @@ T A<T>::A(const T& ref)
 
 그리고 컴파일에 대한 이해도 중요합니다. 컴파일은 파일 단위로 이루어지고, 이에 따라 가끔 템플릿 클래스를 사용할 때, 클래스 템플릿에 대한 모든 정보(클래스 템플릿의 선언과 정의)를 주지 않아서 컴파일 에러를 마주할 때가 있습니다.
 꼭 파일을 분리해서 사용할때에는 클래스 템플릿의 정보를 완전히 준 상태에서 템플릿 클래스를 사용해야합니다.
+
+## 클래스 템플릿 자료형과 friend
+
+템플릿 클래스 객체를 선언할 때, 이때까지 봤었던 것들은 대부분이 `SomeClass<int> sc;` 의 형태였습니다. 하지만 다음과 같은 형태도 가능합니다.
+
+```cpp
+template <typename T>
+Class A { ... };
+
+template <typename T>
+Class B { ... };
+
+A<B<int>> ab; // OK
+
+typedef B<int>* B_PTR;
+A<B_PTR> bpA; // OK
+```
+
+또한 자료형이 이미 정해진 클래스 템플릿에 대해서 `friend` 함수 선언도 가능합니다.
+
+```cpp
+template<typename T>
+class Point
+{
+  // ...
+  friend Point<int> operator+(const Point<int>&, const Point<int>&);
+};
+```
+
+## 클래스 템플릿의 특수화
+
+함수 템플릿과 마찬가지로 클래스 템플릿 또한 특수화가 가능합니다.
+**함수 템플릿과 똑같이, 어떠한 자료형을 기반으로 생성된 객체에 대해 구분이 되는 다른 행동을 따로 구현해주고 싶을때 사용**합니다.
+
+```cpp
+template <typename T>
+class A
+{
+public:
+  T A(T num) { ... }
+};
+
+template<>
+class A<int>
+{
+public:
+  int A(int num) { ... }
+};
+```
+
+### 클래스 템플릿의 부분 특수화
+
+다음과 같은 클래스 템플릿이 있을때
+
+```cpp
+template <typename T1, typename T2>
+class A{ ... }
+
+template <>
+class A<int, char> { ... } // 전체 특수화
+
+template <typename T1>
+class A<T1, int> { ... } // 부분 특수화
+```
+
+제일 아래와 같이 둘중 하나만 자료형을 명시한 것을 부분 특수화라고 합니다.
+
+**호출이될때에는 전체 특수화가 부분 특수화보다 우선시됩니다.**
+
+## 템플릿 인자
