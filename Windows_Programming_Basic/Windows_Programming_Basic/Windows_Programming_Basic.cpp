@@ -84,3 +84,24 @@ int Run()
 
 	return (int)msg.wParam;
 }
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg) 
+	{
+	case WM_LBUTTONDOWN:
+		MessageBox(0, L"Hello, World", L"Hello", MB_OK);
+		return 0;
+	case WM_KEYDOWN:
+		if (wParam == VK_ESCAPE)
+			DestroyWindow(ghMainWnd);
+		return 0;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	default:
+		break;
+	}
+
+	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
