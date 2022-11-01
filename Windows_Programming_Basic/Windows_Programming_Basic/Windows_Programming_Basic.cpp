@@ -61,3 +61,26 @@ bool InitWindowsApp(HINSTANCE instanceHandle, int show)
 
 	return true;
 }
+
+int Run()
+{
+	MSG msg = { 0 };
+
+	BOOL bRet = 1;
+
+	while ((bRet = GetMessage(&msg, 0, 0, 0)) != 0)
+	{
+		if (bRet == -1)
+		{
+			MessageBox(0, L"GetMessage FAILED", L"Error", MB_OK);
+			break;
+		}
+		else
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+
+	return (int)msg.wParam;
+}
