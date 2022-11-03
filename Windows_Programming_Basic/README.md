@@ -23,3 +23,21 @@ Windows application은 계속 `message loop`를 돌리면서 message queue에 �
 
 만약 message가 있으면 window와 연관된 `Window procedure`에 message를 넘겨준다. (모든 window에는 window procedure라는 것이 존재함)
 이 **Window procedure**이 특정 message에 반응해서 실행하는 코드를 담는다. 만약 window가 직접 처리하지 않는 message들은 `default window procedure`로 넘겨주어서 거기서 처리되게 해야한다. -> Win32 API에서는 `DefWindowProc`
+
+운영체제이든 application이든, 적절한 대상을 찾아서 message를 전달하는 것을 **dispatch** 라고한다.
+
+### GUI
+
+대부분의 Windows application들은 Graphical User Interface를 제공한다. 거기에서 주로 Direct3D는 Main window의 client area에 렌더링을 진행한다.
+
+### Unicode
+
+C++에서 유니코드를 사용할 때에는 wide(비트수가 많은) 문자 형식인 `wchar_t`를 사용한다. 32bit, 64bit Windows에서 `wchar_t`는 16bit이다. wide 문자를 나타내기 위해 `L`을 붙이는데 예를 들면
+
+```cpp
+const wcahr_t name = L"HoLuck!";
+```
+
+위와 같이 표현할 수 있다.
+
+C++의 string역시 wide 문자를 위해 따로 클래스를 제공한다. `std::wstring`이다.
