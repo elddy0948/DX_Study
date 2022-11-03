@@ -68,17 +68,16 @@ int Run()
 
 	BOOL bRet = 1;
 
-	while ((bRet = GetMessage(&msg, 0, 0, 0)) != 0)
+	while (msg.message != WM_QUIT)
 	{
-		if (bRet == -1)
-		{
-			MessageBox(0, L"GetMessage FAILED", L"Error", MB_OK);
-			break;
-		}
-		else
+		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+		}
+		else
+		{
+			// do something
 		}
 	}
 
