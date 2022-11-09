@@ -80,6 +80,7 @@ bool D3DApp::InitMainWindow()
 
 	RECT R = { 0, 0, mClientWidth, mClientHeight };
 	AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
+
 	int width = R.right - R.left;
 	int height = R.bottom - R.top;
 
@@ -112,6 +113,8 @@ bool D3DApp::InitMainWindow()
 bool D3DApp::InitDirect3D()
 {
 	CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory));
+
+	// Create Device
 	HRESULT hardwareResult = D3D12CreateDevice(
 		nullptr,
 		D3D_FEATURE_LEVEL_11_0,
@@ -123,6 +126,20 @@ bool D3DApp::InitDirect3D()
 		MessageBox(0, L"Failed init", 0, 0);
 		return false;
 	}
+
+	// Create Fence
+	md3dDevice->CreateFence(
+		0,
+		D3D12_FENCE_FLAG_NONE,
+		IID_PPV_ARGS(&mFence)
+	);
+
+	mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(
+		D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	mDsvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(
+		D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(
+		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	return true;
 }

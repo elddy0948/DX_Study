@@ -32,8 +32,13 @@ protected:
 	HINSTANCE mhAppInstance = nullptr;
 	HWND mhMainWindow = nullptr;
 
+	UINT mRtvDescriptorSize;
+	UINT mDsvDescriptorSize;
+	UINT mCbvSrvDescriptorSize;
+
 	Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;
 	Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;
+	Microsoft::WRL::ComPtr<ID3D12Fence> mFence;
 
 	std::wstring mMainWindowCaption = L"d3d app";
 	int mClientWidth = 800;
