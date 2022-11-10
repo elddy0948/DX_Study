@@ -114,7 +114,14 @@ bool D3DApp::InitDirect3D()
 {
 	CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory));
 
-	// Create Device
+	if (!InitDevice()) { return false; }
+	InitFence();
+
+	return true;
+}
+
+bool D3DApp::InitDevice()
+{
 	HRESULT hardwareResult = D3D12CreateDevice(
 		nullptr,
 		D3D_FEATURE_LEVEL_11_0,
@@ -127,7 +134,11 @@ bool D3DApp::InitDirect3D()
 		return false;
 	}
 
-	// Create Fence
+	return true;
+}
+
+void D3DApp::InitFence()
+{
 	md3dDevice->CreateFence(
 		0,
 		D3D12_FENCE_FLAG_NONE,
@@ -140,6 +151,4 @@ bool D3DApp::InitDirect3D()
 		D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(
 		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-	return true;
 }

@@ -25,6 +25,8 @@ public:
 protected:
 	bool InitMainWindow();
 	bool InitDirect3D();
+	bool InitDevice();
+	void InitFence();
 
 protected:
 	static D3DApp* mApp;
