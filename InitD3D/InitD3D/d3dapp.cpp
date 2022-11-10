@@ -119,6 +119,7 @@ bool D3DApp::InitDirect3D()
 	Check4XMSAA();
 	CreateCommandObjects();
 	CreateSwapChain();
+	CreateRtvAndDsvDescriptorHeaps();
 
 	return true;
 }
@@ -225,4 +226,28 @@ void D3DApp::CreateSwapChain()
 		mCommandQueue.Get(),
 		&scDesc,
 		mSwapChain.GetAddressOf());
+}
+
+void D3DApp::CreateRtvAndDsvDescriptorHeaps()
+{
+	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
+
+	rtvHeapDesc.NumDescriptors = SwapChainBufferCount;
+	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	rtvHeapDesc.NodeMask = 0;
+
+	md3dDevice->CreateDescriptorHeap(
+		&rtvHeapDesc,
+		IID_PPV_ARGS(&mRtvHeap));
+
+	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
+
+	dsvHeapDesc.NumDescriptors = 1;
+	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	dsvHeapDesc.NodeMask = 0;
+
+	md3dDevice->CreateDescriptorHeap(
+		&dsvHeapDesc, IID_PPV_ARGS(&mDsvHeap));
 }

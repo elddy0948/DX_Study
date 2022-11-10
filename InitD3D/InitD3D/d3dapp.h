@@ -32,6 +32,7 @@ protected:
 	void Check4XMSAA();
 	void CreateCommandObjects();
 	void CreateSwapChain();
+	void CreateRtvAndDsvDescriptorHeaps();
 
 protected:
 	static D3DApp* mApp;
@@ -57,7 +58,12 @@ protected:
 
 	//SwapChain
 	static const int SwapChainBufferCount = 2;
+	int mCurrBackBuffer = 0;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
+
+	// Descriptor Heaps
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mRtvHeap;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
 
 	DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
