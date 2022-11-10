@@ -32,9 +32,9 @@ protected:
 	HINSTANCE mhAppInstance = nullptr;
 	HWND mhMainWindow = nullptr;
 
-	UINT mRtvDescriptorSize;
-	UINT mDsvDescriptorSize;
-	UINT mCbvSrvDescriptorSize;
+	UINT mRtvDescriptorSize = 0;
+	UINT mDsvDescriptorSize = 0;
+	UINT mCbvSrvDescriptorSize = 0;
 
 	Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;
 	Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;
