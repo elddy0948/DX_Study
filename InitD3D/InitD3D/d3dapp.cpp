@@ -116,6 +116,7 @@ bool D3DApp::InitDirect3D()
 
 	if (!InitDevice()) { return false; }
 	InitFence();
+	Check4XMSAA();
 
 	return true;
 }
@@ -151,4 +152,22 @@ void D3DApp::InitFence()
 		D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(
 		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+}
+
+void D3DApp::Check4XMSAA()
+{
+	D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS msQualityLevels;
+	msQualityLevels.Format = mBackBufferFormat;
+	msQualityLevels.SampleCount = 4;
+	msQualityLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
+	msQualityLevels.NumQualityLevels = 0;
+
+	md3dDevice->CheckFeatureSupport(
+		D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
+		&msQualityLevels,
+		sizeof(msQualityLevels));
+
+	m4xMsaaQuality = msQualityLevels.NumQualityLevels;
+
+	assert(m4xMsaaQuality > 0);
 }

@@ -6,6 +6,7 @@
 #include <dxgi.h>
 #include <dxgi1_4.h>
 #include <string>
+#include <cassert>
 
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
@@ -25,8 +26,10 @@ public:
 protected:
 	bool InitMainWindow();
 	bool InitDirect3D();
+
 	bool InitDevice();
 	void InitFence();
+	void Check4XMSAA();
 
 protected:
 	static D3DApp* mApp;
@@ -38,9 +41,13 @@ protected:
 	UINT mDsvDescriptorSize = 0;
 	UINT mCbvSrvDescriptorSize = 0;
 
+	UINT m4xMsaaQuality = 0;
+
 	Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;
 	Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;
 	Microsoft::WRL::ComPtr<ID3D12Fence> mFence;
+
+	DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	std::wstring mMainWindowCaption = L"d3d app";
 	int mClientWidth = 800;
