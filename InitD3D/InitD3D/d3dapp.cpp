@@ -251,3 +251,17 @@ void D3DApp::CreateRtvAndDsvDescriptorHeaps()
 	md3dDevice->CreateDescriptorHeap(
 		&dsvHeapDesc, IID_PPV_ARGS(&mDsvHeap));
 }
+
+D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::CurrentBackBufferView() const
+{
+	return CD3DX12_CPU_DESCRIPTOR_HANDLE(
+		mRtvHeap->GetCPUDescriptorHandleForHeapStart(),
+		mCurrBackBuffer,
+		mRtvDescriptorSize
+	);
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::DepthStencilView() const
+{
+	return mDsvHeap->GetCPUDescriptorHandleForHeapStart();
+}

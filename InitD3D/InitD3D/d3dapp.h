@@ -7,6 +7,7 @@
 #include <dxgi1_4.h>
 #include <string>
 #include <cassert>
+#include "d3dx12.h"
 
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
@@ -33,6 +34,9 @@ protected:
 	void CreateCommandObjects();
 	void CreateSwapChain();
 	void CreateRtvAndDsvDescriptorHeaps();
+
+	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
+	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
 
 protected:
 	static D3DApp* mApp;
