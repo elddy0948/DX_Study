@@ -30,6 +30,7 @@ protected:
 	bool InitDevice();
 	void InitFence();
 	void Check4XMSAA();
+	void CreateCommandObjects();
 
 protected:
 	static D3DApp* mApp;
@@ -46,6 +47,11 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;
 	Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;
 	Microsoft::WRL::ComPtr<ID3D12Fence> mFence;
+
+	//Command Queue and Command List
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;
 
 	DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 

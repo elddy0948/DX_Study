@@ -117,6 +117,7 @@ bool D3DApp::InitDirect3D()
 	if (!InitDevice()) { return false; }
 	InitFence();
 	Check4XMSAA();
+	CreateCommandObjects();
 
 	return true;
 }
@@ -170,4 +171,28 @@ void D3DApp::Check4XMSAA()
 	m4xMsaaQuality = msQualityLevels.NumQualityLevels;
 
 	assert(m4xMsaaQuality > 0);
+}
+
+void D3DApp::CreateCommandObjects()
+{
+	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+
+	md3dDevice->CreateCommandQueue(
+		&queueDesc,
+		IID_PPV_ARGS(&mCommandQueue));
+
+	md3dDevice->CreateCommandAllocator(
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
+		IID_PPV_ARGS(&mDirectCmdListAlloc));
+
+	md3dDevice->CreateCommandList(
+		0,
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
+		mDirectCmdListAlloc.Get(),
+		nullptr,
+		IID_PPV_ARGS(&mCommandList));
+
+	mCommandList->Close();
 }
