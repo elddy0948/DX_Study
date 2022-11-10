@@ -118,6 +118,7 @@ bool D3DApp::InitDirect3D()
 	InitFence();
 	Check4XMSAA();
 	CreateCommandObjects();
+	CreateSwapChain();
 
 	return true;
 }
@@ -195,4 +196,33 @@ void D3DApp::CreateCommandObjects()
 		IID_PPV_ARGS(&mCommandList));
 
 	mCommandList->Close();
+}
+
+void D3DApp::CreateSwapChain()
+{
+	mSwapChain.Reset();
+
+	DXGI_SWAP_CHAIN_DESC scDesc;
+
+	scDesc.BufferDesc.Width = mClientWidth;
+	scDesc.BufferDesc.Height = mClientHeight;
+	scDesc.BufferDesc.RefreshRate.Numerator = 60;
+	scDesc.BufferDesc.RefreshRate.Denominator = 1;
+	scDesc.BufferDesc.Format = mBackBufferFormat;
+	scDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	
+	scDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
+	scDesc.SampleDesc.Quality = m4xMsaaQuality ? (m4xMsaaQuality - 1) : 0;
+
+	scDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	scDesc.BufferCount = SwapChainBufferCount;
+	scDesc.OutputWindow = mhMainWindow;
+	scDesc.Windowed = true;
+	scDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	scDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+	mdxgiFactory->CreateSwapChain(
+		mCommandQueue.Get(),
+		&scDesc,
+		mSwapChain.GetAddressOf());
 }

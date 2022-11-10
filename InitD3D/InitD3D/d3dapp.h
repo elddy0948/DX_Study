@@ -31,6 +31,7 @@ protected:
 	void InitFence();
 	void Check4XMSAA();
 	void CreateCommandObjects();
+	void CreateSwapChain();
 
 protected:
 	static D3DApp* mApp;
@@ -42,6 +43,7 @@ protected:
 	UINT mDsvDescriptorSize = 0;
 	UINT mCbvSrvDescriptorSize = 0;
 
+	bool m4xMsaaState = false;
 	UINT m4xMsaaQuality = 0;
 
 	Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;
@@ -52,6 +54,10 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;
+
+	//SwapChain
+	static const int SwapChainBufferCount = 2;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
 
 	DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
