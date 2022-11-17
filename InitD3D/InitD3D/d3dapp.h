@@ -7,7 +7,9 @@
 #include <dxgi1_4.h>
 #include <string>
 #include <cassert>
+
 #include "d3dx12.h"
+#include "D3DUtils.h"
 
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
