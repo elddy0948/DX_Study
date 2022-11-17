@@ -1,4 +1,3 @@
-#include "framework.h"
 #include "InitD3D.h"
 #include "d3dapp.h"
 
