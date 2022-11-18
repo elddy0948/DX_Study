@@ -19,12 +19,24 @@ class D3DApp
 {
 protected:
 	D3DApp(HINSTANCE hInstance);
+	D3DApp(const D3DApp& rhs) = delete;
+	D3DApp& operator=(const D3DApp& rhs) = delete;
+	virtual ~D3DApp();
 
 public:
 	static D3DApp* GetApp();
+
+	HINSTANCE AppInst() const;
+	HWND MainWnd() const;
+	float AspectRatio() const;
+
+	bool Get4xMsaaState() const;
+	void Set4XMsaaState(bool value);
+
+	int Run();
+
 	virtual bool Initialize();
 	virtual LRESULT MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	int Run();
 
 protected:
 	bool InitMainWindow();
@@ -34,6 +46,7 @@ protected:
 	void InitFence();
 	void Check4XMSAA();
 	void CreateCommandObjects();
+	void FlushCommandQueue();
 	void CreateSwapChain();
 	void CreateRtvAndDsvDescriptorHeaps();
 
@@ -49,6 +62,8 @@ protected:
 	UINT mRtvDescriptorSize = 0;
 	UINT mDsvDescriptorSize = 0;
 	UINT mCbvSrvDescriptorSize = 0;
+
+	UINT64 mCurrentFence = 0;
 
 	bool m4xMsaaState = false;
 	UINT m4xMsaaQuality = 0;

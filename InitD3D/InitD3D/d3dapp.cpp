@@ -1,20 +1,57 @@
 #include "d3dapp.h"
 
+#include <windowsx.h>
+
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	return D3DApp::GetApp()->MsgProc(hWnd, msg, wParam, lParam);
-}
-
-D3DApp* D3DApp::mApp = nullptr;
-D3DApp* D3DApp::GetApp()
-{
-	return mApp;
 }
 
 D3DApp::D3DApp(HINSTANCE hInstance)
 	:mhAppInstance(hInstance)
 {
 	mApp = this;
+}
+
+D3DApp::~D3DApp()
+{
+}
+
+D3DApp* D3DApp::mApp = nullptr;
+
+D3DApp* D3DApp::GetApp()
+{
+	return mApp;
+}
+
+HINSTANCE D3DApp::AppInst() const
+{
+	return mhAppInstance;
+}
+
+HWND D3DApp::MainWnd() const
+{
+	return mhMainWindow;
+}
+
+float D3DApp::AspectRatio() const
+{
+	return static_cast<float>(mClientWidth) / mClientHeight;
+}
+
+bool D3DApp::Get4xMsaaState() const
+{
+	return m4xMsaaState;
+}
+
+void D3DApp::Set4XMsaaState(bool value)
+{
+	if (m4xMsaaState != value)
+	{
+		m4xMsaaState = value;
+		CreateSwapChain();
+		//OnResize();
+	}
 }
 
 bool D3DApp::Initialize()
@@ -197,6 +234,19 @@ void D3DApp::CreateCommandObjects()
 		IID_PPV_ARGS(&mCommandList));
 
 	mCommandList->Close();
+}
+
+void D3DApp::FlushCommandQueue()
+{
+	mCurrentFence++;
+	ThrowIfFailed(mCommandQueue->Signal(mFence.Get(), mCurrentFence));
+	if (mFence->GetCompletedValue() < mCurrentFence)
+	{
+		HANDLE eventHandle = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
+		ThrowIfFailed(mFence->SetEventOnCompletion(mCurrentFence, eventHandle));
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
+	}
 }
 
 void D3DApp::CreateSwapChain()
