@@ -7,17 +7,22 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return D3DApp::GetApp()->MsgProc(hWnd, msg, wParam, lParam);
 }
 
+D3DApp* D3DApp::mApp = nullptr;
+
 D3DApp::D3DApp(HINSTANCE hInstance)
 	:mhAppInstance(hInstance)
 {
+	assert(mApp == nullptr);
 	mApp = this;
 }
 
-D3DApp::~D3DApp()
+D3DApp::~D3DApp() 
 {
+	if (md3dDevice != nullptr)
+	{
+		FlushCommandQueue();
+	}
 }
-
-D3DApp* D3DApp::mApp = nullptr;
 
 D3DApp* D3DApp::GetApp()
 {
@@ -50,13 +55,15 @@ void D3DApp::Set4XMsaaState(bool value)
 	{
 		m4xMsaaState = value;
 		CreateSwapChain();
-		//OnResize();
+		OnResize();
 	}
 }
 
 int D3DApp::Run()
 {
 	MSG msg = { 0 };
+	
+	mTimer.Reset();
 	
 	while (msg.message != WM_QUIT)
 	{
@@ -67,7 +74,17 @@ int D3DApp::Run()
 		}
 		else 
 		{
-
+			mTimer.Tick();
+			if (!mAppPaused)
+			{
+				CalculateFrameStats();
+				Update(mTimer);
+				Draw(mTimer);
+			}
+			else
+			{
+				Sleep(100);
+			}
 		}
 	}
 	return (int)msg.wParam;
@@ -77,6 +94,7 @@ bool D3DApp::Initialize()
 {
 	if (!InitMainWindow()) { return false; }
 	if (!InitDirect3D()) { return false; }
+	OnResize();
 	return true;
 }
 
@@ -84,8 +102,83 @@ LRESULT D3DApp::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
-	case WM_KEYDOWN:
-		if (wParam == VK_ESCAPE) { DestroyWindow(mhMainWindow); }
+	case WM_ACTIVATE:
+		if (LOWORD(wParam) == WA_INACTIVE)
+		{
+			mAppPaused = true;
+			mTimer.Stop();
+		}
+		else
+		{
+			mAppPaused = false;
+			mTimer.Start();
+		}
+		return 0;
+
+	case WM_SIZE:
+		mClientWidth = LOWORD(lParam);
+		mClientHeight = HIWORD(lParam);
+		if (md3dDevice)
+		{
+			if (wParam == SIZE_MINIMIZED)
+			{
+				mAppPaused = true;
+				mMinimized = true;
+				mMaximized = false;
+			}
+			else if (wParam == SIZE_MAXIMIZED)
+			{
+				mAppPaused = false;
+				mMinimized = false;
+				mMaximized = true;
+				OnResize();
+			}
+			else if (wParam == SIZE_RESTORED)
+			{
+				if (mMinimized)
+				{
+					mAppPaused = false;
+					mMinimized = false;
+					OnResize();
+				}
+				else if (mMaximized)
+				{
+					mAppPaused = false;
+					mMaximized = false;
+					OnResize();
+				}
+				else
+				{
+					OnResize();
+				}
+			}
+		}
+		return 0;
+	case WM_ENTERSIZEMOVE:
+		mAppPaused = true;
+		mResizing = true;
+		mTimer.Stop();
+		return 0;
+
+	case WM_EXITSIZEMOVE:
+		mAppPaused = false;
+		mResizing = false;
+		mTimer.Start();
+		OnResize();
+		return 0;
+
+	case WM_MENUCHAR:
+		return MAKELRESULT(0, MNC_CLOSE);
+
+	case WM_KEYUP:
+		if (wParam == VK_ESCAPE)
+		{
+			PostQuitMessage(0);
+		}
+		else if ((int)wParam == VK_F2)
+		{
+			Set4XMsaaState(!m4xMsaaState);
+		}
 		return 0;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -275,11 +368,21 @@ bool D3DApp::InitMainWindow()
 
 bool D3DApp::InitDirect3D()
 {
-	CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory));
+#if defined(DEBUG) || defined(_DEBUG)
+	{
+		Microsoft::WRL::ComPtr<ID3D12Debug> debugController;
+		ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
+		debugController->EnableDebugLayer();
+	}
+#endif
+
+	ThrowIfFailed(CreateDXGIFactory(IID_PPV_ARGS(&mdxgiFactory)));
+
 
 	if (!InitDevice()) { return false; }
 	InitFence();
 	Check4XMSAA();
+
 	CreateCommandObjects();
 	CreateSwapChain();
 	CreateRtvAndDsvDescriptorHeaps();
@@ -306,11 +409,11 @@ bool D3DApp::InitDevice()
 
 void D3DApp::InitFence()
 {
-	md3dDevice->CreateFence(
+	ThrowIfFailed(md3dDevice->CreateFence(
 		0,
 		D3D12_FENCE_FLAG_NONE,
 		IID_PPV_ARGS(&mFence)
-	);
+	));
 
 	mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(
 		D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -328,10 +431,10 @@ void D3DApp::Check4XMSAA()
 	msQualityLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
 	msQualityLevels.NumQualityLevels = 0;
 
-	md3dDevice->CheckFeatureSupport(
+	ThrowIfFailed(md3dDevice->CheckFeatureSupport(
 		D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
 		&msQualityLevels,
-		sizeof(msQualityLevels));
+		sizeof(msQualityLevels)));
 
 	m4xMsaaQuality = msQualityLevels.NumQualityLevels;
 
@@ -344,20 +447,20 @@ void D3DApp::CreateCommandObjects()
 	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 
-	md3dDevice->CreateCommandQueue(
+	ThrowIfFailed(md3dDevice->CreateCommandQueue(
 		&queueDesc,
-		IID_PPV_ARGS(&mCommandQueue));
+		IID_PPV_ARGS(&mCommandQueue)));
 
-	md3dDevice->CreateCommandAllocator(
+	ThrowIfFailed(md3dDevice->CreateCommandAllocator(
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		IID_PPV_ARGS(&mDirectCmdListAlloc));
+		IID_PPV_ARGS(&mDirectCmdListAlloc)));
 
-	md3dDevice->CreateCommandList(
+	ThrowIfFailed(md3dDevice->CreateCommandList(
 		0,
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
 		mDirectCmdListAlloc.Get(),
 		nullptr,
-		IID_PPV_ARGS(&mCommandList));
+		IID_PPV_ARGS(&mCommandList)));
 
 	mCommandList->Close();
 }
@@ -385,10 +488,10 @@ void D3DApp::CreateSwapChain()
 	scDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	scDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-	mdxgiFactory->CreateSwapChain(
+	ThrowIfFailed(mdxgiFactory->CreateSwapChain(
 		mCommandQueue.Get(),
 		&scDesc,
-		mSwapChain.GetAddressOf());
+		mSwapChain.GetAddressOf()));
 }
 
 void D3DApp::FlushCommandQueue()
@@ -421,4 +524,30 @@ D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::CurrentBackBufferView() const
 D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::DepthStencilView() const
 {
 	return mDsvHeap->GetCPUDescriptorHandleForHeapStart();
+}
+
+void D3DApp::CalculateFrameStats()
+{
+	static int frameCnt = 0;
+	static float timeElapsed = 0.0f;
+
+	frameCnt++;
+
+	if ((mTimer.GameTime() - timeElapsed) >= 1.0f)
+	{
+		float fps = (float)frameCnt;
+		float mspf = 1000.0f / fps;
+
+		std::wstring fpsStr = std::to_wstring(fps);
+		std::wstring mspfStr = std::to_wstring(mspf);
+
+		std::wstring windowText = mMainWindowCaption +
+			L"    fps : " + fpsStr +
+			L"    mspf : " + mspfStr;
+
+		SetWindowText(mhMainWindow, windowText.c_str());
+
+		frameCnt = 0;
+		timeElapsed += 1.0f;
+	}
 }

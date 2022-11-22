@@ -62,11 +62,17 @@ protected:
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
 
+	void CalculateFrameStats();
+
 protected:
 	static D3DApp* mApp;
 
 	HINSTANCE mhAppInstance = nullptr;
 	HWND mhMainWindow = nullptr;
+	bool mAppPaused = false;
+	bool mMinimized = false;
+	bool mMaximized = false;
+	bool mResizing = false;
 
 	UINT mRtvDescriptorSize = 0;
 	UINT mDsvDescriptorSize = 0;
@@ -76,6 +82,8 @@ protected:
 
 	bool m4xMsaaState = false;
 	UINT m4xMsaaQuality = 0;
+
+	GameTimer mTimer;
 
 	Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;
 	Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;
