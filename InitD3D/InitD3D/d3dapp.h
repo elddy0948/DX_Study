@@ -10,6 +10,7 @@
 
 #include "d3dx12.h"
 #include "D3DUtils.h"
+#include "GameTimer.h"
 
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
@@ -39,6 +40,12 @@ public:
 	virtual LRESULT MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:
+	virtual void CreateRtvAndDsvDescriptorHeaps();
+	virtual void OnResize();
+	virtual void Update(const GameTimer& gt) = 0;
+	virtual void Draw(const GameTimer& gt) = 0;
+
+protected:
 	bool InitMainWindow();
 	bool InitDirect3D();
 
@@ -48,7 +55,6 @@ protected:
 	void CreateCommandObjects();
 	void FlushCommandQueue();
 	void CreateSwapChain();
-	void CreateRtvAndDsvDescriptorHeaps();
 
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
@@ -82,13 +88,21 @@ protected:
 	int mCurrBackBuffer = 0;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
 
+	//SwapChain Buffer
+	Microsoft::WRL::ComPtr<ID3D12Resource> mSwapChainBuffer[SwapChainBufferCount];
+	Microsoft::WRL::ComPtr<ID3D12Resource> mDepthStencilBuffer;
+
 	// Descriptor Heaps
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mRtvHeap;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
 
+	D3D12_VIEWPORT mScreenViewPort;
+	D3D12_RECT mScissorRect;
+
 	DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	std::wstring mMainWindowCaption = L"d3d app";
+	DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	int mClientWidth = 800;
 	int mClientHeight = 600;
 };
