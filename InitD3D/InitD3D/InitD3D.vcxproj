@@ -133,12 +133,16 @@
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="InitD3D.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="resource1.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3dapp.cpp" />
     <ClCompile Include="D3DUtils.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="InitD3D.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="InitD3D.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

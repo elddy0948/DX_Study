@@ -357,19 +357,6 @@ void D3DApp::CreateCommandObjects()
 	mCommandList->Close();
 }
 
-void D3DApp::FlushCommandQueue()
-{
-	mCurrentFence++;
-	ThrowIfFailed(mCommandQueue->Signal(mFence.Get(), mCurrentFence));
-	if (mFence->GetCompletedValue() < mCurrentFence)
-	{
-		HANDLE eventHandle = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
-		ThrowIfFailed(mFence->SetEventOnCompletion(mCurrentFence, eventHandle));
-		WaitForSingleObject(eventHandle, INFINITE);
-		CloseHandle(eventHandle);
-	}
-}
-
 void D3DApp::CreateSwapChain()
 {
 	mSwapChain.Reset();
@@ -382,7 +369,7 @@ void D3DApp::CreateSwapChain()
 	scDesc.BufferDesc.RefreshRate.Denominator = 1;
 	scDesc.BufferDesc.Format = mBackBufferFormat;
 	scDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	
+
 	scDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
 	scDesc.SampleDesc.Quality = m4xMsaaQuality ? (m4xMsaaQuality - 1) : 0;
 
@@ -397,6 +384,24 @@ void D3DApp::CreateSwapChain()
 		mCommandQueue.Get(),
 		&scDesc,
 		mSwapChain.GetAddressOf());
+}
+
+void D3DApp::FlushCommandQueue()
+{
+	mCurrentFence++;
+	ThrowIfFailed(mCommandQueue->Signal(mFence.Get(), mCurrentFence));
+	if (mFence->GetCompletedValue() < mCurrentFence)
+	{
+		HANDLE eventHandle = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
+		ThrowIfFailed(mFence->SetEventOnCompletion(mCurrentFence, eventHandle));
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
+	}
+}
+
+ID3D12Resource* D3DApp::CurrentBackBuffer() const
+{
+	return mSwapChainBuffer[mCurrBackBuffer].Get();
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::CurrentBackBufferView() const
