@@ -1,5 +1,7 @@
 #include "D3DApp.h"
 
+using namespace Microsoft::WRL;
+
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	return D3DApp::GetApp()->MsgProc(hwnd, msg, wParam, lParam);
@@ -39,7 +41,7 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 bool D3DApp::InitMainWindow()
 {
-	WNDCLASS wc;
+	WNDCLASS wc = {};
 	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc = MainWndProc;
 	wc.cbClsExtra = 0;
@@ -87,6 +89,38 @@ bool D3DApp::InitMainWindow()
 	UpdateWindow(mhMainWnd);
 
 	return true;
+}
+
+bool D3DApp::InitD3D()
+{
+	// Create Device
+#if defined(DEBUG) || defined(_DEBUG)
+{
+	ComPtr<ID3D12Debug> debugController;
+	ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
+	debugController->EnableDebugLayer();
+}
+#endif
+
+	ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory)));
+	HRESULT hardwareResult = D3D12CreateDevice(
+		nullptr,
+		D3D_FEATURE_LEVEL_11_0,
+		IID_PPV_ARGS(&md3dDevice)
+	);
+
+	if (FAILED(hardwareResult))
+	{
+		MessageBox(nullptr, L"Failed to create D3D device!", 0, 0);
+		return false;
+	}
+
+	// Create Fence and Check Descriptor size
+	ThrowIfFailed(md3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence)));
+
+	mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	mDsvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
 int D3DApp::Run()
