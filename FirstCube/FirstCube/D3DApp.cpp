@@ -135,6 +135,8 @@ bool D3DApp::InitD3D()
 		sizeof(multiSampleQualityLevels)));
 	m4xMsaaQuality = multiSampleQualityLevels.NumQualityLevels;
 	assert(m4xMsaaQuality > 0 && "Unexpected MSAA quality level");
+
+	CreateCommandObjects();
 }
 
 int D3DApp::Run()
@@ -155,4 +157,28 @@ int D3DApp::Run()
 	}
 
 	return (int)msg.wParam;
+}
+
+void D3DApp::CreateCommandObjects()
+{
+	// command queue
+	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+	ThrowIfFailed(md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue)));
+
+	// command allocator
+	ThrowIfFailed(md3dDevice->CreateCommandAllocator(
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
+		IID_PPV_ARGS(mDirectCmdListAllocator.GetAddressOf())));
+
+	// command list
+	ThrowIfFailed(md3dDevice->CreateCommandList(
+		0, 
+		D3D12_COMMAND_LIST_TYPE_DIRECT, 
+		mDirectCmdListAllocator.Get(),
+		nullptr, 
+		IID_PPV_ARGS(mCommandList.GetAddressOf())));
+
+	mCommandList->Close();
 }

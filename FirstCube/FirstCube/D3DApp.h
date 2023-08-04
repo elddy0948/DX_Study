@@ -21,6 +21,8 @@ public:
 	bool InitD3D();
 	int Run();
 
+	void CreateCommandObjects();
+
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:
@@ -33,6 +35,10 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;
 	Microsoft::WRL::ComPtr<ID3D12Fence> mFence;
 	
+	// Command objects
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAllocator;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;
 
 	// Descriptor size
 	UINT mRtvDescriptorSize = 0;
