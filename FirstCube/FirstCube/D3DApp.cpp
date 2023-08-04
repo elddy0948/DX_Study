@@ -137,6 +137,7 @@ bool D3DApp::InitD3D()
 	assert(m4xMsaaQuality > 0 && "Unexpected MSAA quality level");
 
 	CreateCommandObjects();
+	CreateSwapChain();
 }
 
 int D3DApp::Run()
@@ -181,4 +182,31 @@ void D3DApp::CreateCommandObjects()
 		IID_PPV_ARGS(mCommandList.GetAddressOf())));
 
 	mCommandList->Close();
+}
+
+void D3DApp::CreateSwapChain()
+{
+	mSwapChain.Reset();
+
+	DXGI_SWAP_CHAIN_DESC sd;
+
+	sd.BufferDesc.Width = mClientWidth;
+	sd.BufferDesc.Height = mClientHeight;
+	sd.BufferDesc.RefreshRate.Numerator = 60;
+	sd.BufferDesc.RefreshRate.Denominator = 1;
+	sd.BufferDesc.Format = mBackBufferFormat;
+	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+
+	sd.SampleDesc.Count = m4xMsaaState ? 4 : 1;
+	sd.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
+
+	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	sd.BufferCount = SwapChainBufferCount;
+	sd.OutputWindow = mhMainWnd;
+	sd.Windowed = true;
+	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+	ThrowIfFailed(mdxgiFactory->CreateSwapChain(mCommandQueue.Get(), &sd, mSwapChain.GetAddressOf()));
 }

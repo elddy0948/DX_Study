@@ -22,6 +22,7 @@ public:
 	int Run();
 
 	void CreateCommandObjects();
+	void CreateSwapChain();
 
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -47,6 +48,11 @@ protected:
 
 	DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	UINT m4xMsaaQuality = 0;
+	bool m4xMsaaState = false;
+
+	static const int SwapChainBufferCount = 2;
+
+	Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
 
 	std::wstring mMainWndCaption = L"First Cube";
 
