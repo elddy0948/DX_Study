@@ -23,6 +23,7 @@ public:
 
 	void CreateCommandObjects();
 	void CreateSwapChain();
+	void CreateRtvAndDsvDescriptorHeap();
 
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -41,6 +42,10 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAllocator;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;
 
+	// Descriptor Heap
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mRtvHeap;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
+
 	// Descriptor size
 	UINT mRtvDescriptorSize = 0;
 	UINT mDsvDescriptorSize = 0;
@@ -51,6 +56,7 @@ protected:
 	bool m4xMsaaState = false;
 
 	static const int SwapChainBufferCount = 2;
+	int mCurrentBackBuffer = 0;
 
 	Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
 
