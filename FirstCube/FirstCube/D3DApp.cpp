@@ -121,6 +121,20 @@ bool D3DApp::InitD3D()
 	mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	mDsvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	// 4XMSAA Check
+	D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS multiSampleQualityLevels;
+	multiSampleQualityLevels.Format = mBackBufferFormat;
+	multiSampleQualityLevels.SampleCount = 4;
+	multiSampleQualityLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
+	multiSampleQualityLevels.NumQualityLevels = 0;
+
+	ThrowIfFailed(md3dDevice->CheckFeatureSupport(
+		D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
+		&multiSampleQualityLevels,
+		sizeof(multiSampleQualityLevels)));
+	m4xMsaaQuality = multiSampleQualityLevels.NumQualityLevels;
+	assert(m4xMsaaQuality > 0 && "Unexpected MSAA quality level");
 }
 
 int D3DApp::Run()

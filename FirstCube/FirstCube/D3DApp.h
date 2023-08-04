@@ -32,11 +32,15 @@ protected:
 	Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;
 	Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;
 	Microsoft::WRL::ComPtr<ID3D12Fence> mFence;
+	
 
 	// Descriptor size
 	UINT mRtvDescriptorSize = 0;
 	UINT mDsvDescriptorSize = 0;
 	UINT mCbvSrvDescriptorSize = 0;
+
+	DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+	UINT m4xMsaaQuality = 0;
 
 	std::wstring mMainWndCaption = L"First Cube";
 
