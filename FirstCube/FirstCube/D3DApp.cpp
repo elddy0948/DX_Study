@@ -142,6 +142,8 @@ bool D3DApp::InitD3D()
 	CreateRenderTargetView();
 	CreateDepthStencilBuffer();
 	CreateDepthStencilView();
+	SetViewports();
+	SetScissorRect();
 }
 
 int D3DApp::Run()
@@ -306,4 +308,23 @@ void D3DApp::CreateDepthStencilView()
 			mDepthStencilBuffer.Get(),
 			D3D12_RESOURCE_STATE_COMMON,
 			D3D12_RESOURCE_STATE_DEPTH_WRITE));
+}
+
+void D3DApp::SetViewports()
+{
+	D3D12_VIEWPORT viewport;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	viewport.Width = static_cast<float>(mClientWidth);
+	viewport.Height = static_cast<float>(mClientHeight);
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+
+	mCommandList->RSSetViewports(1, &viewport);
+}
+
+void D3DApp::SetScissorRect()
+{
+	mScissorRect = { 0, 0, mClientWidth / 2, mClientHeight / 2 };
+	mCommandList->RSSetScissorRects(1, &mScissorRect);
 }

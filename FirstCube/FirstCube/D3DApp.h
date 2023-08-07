@@ -31,6 +31,8 @@ public:
 	void CreateRenderTargetView();
 	void CreateDepthStencilBuffer();
 	void CreateDepthStencilView();
+	void SetViewports();
+	void SetScissorRect();
 	
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -70,6 +72,8 @@ protected:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> mDepthStencilBuffer;
 	DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D16_UNORM;
+
+	D3D12_RECT mScissorRect;
 
 	std::wstring mMainWndCaption = L"First Cube";
 
