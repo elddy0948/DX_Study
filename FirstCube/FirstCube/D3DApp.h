@@ -25,6 +25,9 @@ public:
 	void CreateSwapChain();
 	void CreateRtvAndDsvDescriptorHeap();
 
+	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
+	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
+	
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:

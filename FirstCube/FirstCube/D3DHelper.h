@@ -8,6 +8,7 @@
 #include <dxgi1_4.h>
 #include <d3dcompiler.h>
 #include <memory>
+#include "d3dx12.h"
 
 class D3DHelper
 {
