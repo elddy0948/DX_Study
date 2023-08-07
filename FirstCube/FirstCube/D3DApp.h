@@ -27,6 +27,8 @@ public:
 
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
+
+	void CreateRenderTargetView();
 	
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -62,6 +64,7 @@ protected:
 	int mCurrentBackBuffer = 0;
 
 	Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
+	Microsoft::WRL::ComPtr<ID3D12Resource> mSwapChainBuffer[SwapChainBufferCount];
 
 	std::wstring mMainWndCaption = L"First Cube";
 

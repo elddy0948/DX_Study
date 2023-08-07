@@ -139,6 +139,7 @@ bool D3DApp::InitD3D()
 	CreateCommandObjects();
 	CreateSwapChain();
 	CreateRtvAndDsvDescriptorHeap();
+	CreateRenderTargetView();	
 }
 
 int D3DApp::Run()
@@ -243,4 +244,20 @@ D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::CurrentBackBufferView() const
 D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::DepthStencilView() const
 {
 	return mDsvHeap->GetCPUDescriptorHandleForHeapStart();
+}
+
+void D3DApp::CreateRenderTargetView()
+{
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(mRtvHeap->GetCPUDescriptorHandleForHeapStart());
+
+	for (UINT i = 0; i < SwapChainBufferCount; i++)
+	{
+		// get buffer which index is i in swap chain
+		ThrowIfFailed(mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i])));
+
+		// create render target view for that buffer
+		md3dDevice->CreateRenderTargetView(mSwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
+
+		rtvHeapHandle.Offset(1, mRtvDescriptorSize);
+	}
 }
