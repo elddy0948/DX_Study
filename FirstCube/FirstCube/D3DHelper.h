@@ -11,32 +11,25 @@
 #include "d3dx12.h"
 #include <exception>
 #include <xstring>
+#include "DxException.h"
 
 class D3DHelper
 {
 
 };
 
-class com_exception : public std::exception
+inline std::wstring AnsiToWString(const std::string& str)
 {
-public:
-	com_exception(HRESULT hr) : result(hr) {}
-
-	const char* what() const noexcept override
-	{
-		static char s_str[64] = {};
-		sprintf_s(s_str, "Failure with HRESULT of %08X", static_cast<unsigned int>(result));
-		return s_str;
-	}
-
-private:
-	HRESULT result;
-};
-
-inline void ThrowIfFailed(HRESULT hr)
-{
-	if (FAILED(hr))
-	{
-		throw com_exception(hr);
-	}
+	WCHAR buffer[512];
+	MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, buffer, 512);
+	return std::wstring(buffer);
 }
+
+#ifndef ThrowIfFailed
+#define ThrowIfFailed(x) \
+{ \
+	HRESULT hr__ = (x); \
+	std::wstring wfn = AnsiToWString(__FILE__); \
+	if (FAILED(hr__)) { throw DxException(hr__, L#x, wfn, __LINE__); } \
+}
+#endif

@@ -30,6 +30,9 @@
     <ClCompile Include="BackgroundApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DxException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D3DApp.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BackgroundApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DxException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

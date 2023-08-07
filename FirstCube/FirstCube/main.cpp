@@ -18,9 +18,9 @@ int WINAPI WinMain(
 
 		return ba.Run();
 	}
-	catch (std::exception e)
+	catch (DxException& e)
 	{
-
+		MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
 		return 0;
 	}
 }

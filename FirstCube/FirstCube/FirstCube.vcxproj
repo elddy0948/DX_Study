@@ -130,6 +130,7 @@
     <ClCompile Include="BackgroundApp.cpp" />
     <ClCompile Include="D3DApp.cpp" />
     <ClCompile Include="D3DHelper.h" />
+    <ClCompile Include="DxException.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -137,6 +138,7 @@
     <ClInclude Include="BackgroundApp.h" />
     <ClInclude Include="D3DApp.h" />
     <ClInclude Include="d3dx12.h" />
+    <ClInclude Include="DxException.h" />
     <ClInclude Include="GameTimer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
