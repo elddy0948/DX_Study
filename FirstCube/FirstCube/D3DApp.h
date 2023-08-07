@@ -29,6 +29,8 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
 
 	void CreateRenderTargetView();
+	void CreateDepthStencilBuffer();
+	void CreateDepthStencilView();
 	
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -65,6 +67,9 @@ protected:
 
 	Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
 	Microsoft::WRL::ComPtr<ID3D12Resource> mSwapChainBuffer[SwapChainBufferCount];
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> mDepthStencilBuffer;
+	DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D16_UNORM;
 
 	std::wstring mMainWndCaption = L"First Cube";
 
