@@ -1,5 +1,5 @@
 #include <iostream>
-#include "D3DApp.h"
+#include "BackgroundApp.h"
 
 int WINAPI WinMain(
 	HINSTANCE hInstance,
@@ -7,16 +7,20 @@ int WINAPI WinMain(
 	PSTR cmdLine,
 	int showCmd)
 {
-	D3DApp cubeApp(hInstance);
-
-	if (!cubeApp.InitMainWindow())
+	try
 	{
-		MessageBox(nullptr, L"Init window failed.", 0, 0);
-		return -1;
-	}
-	else
-	{
-		cubeApp.Run();
-	}
+		BackgroundApp ba(hInstance);
 
+		if (!ba.Initialize())
+		{
+			return 0;
+		}
+
+		return ba.Run();
+	}
+	catch (std::exception e)
+	{
+
+		return 0;
+	}
 }

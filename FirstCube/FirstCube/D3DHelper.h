@@ -9,6 +9,8 @@
 #include <d3dcompiler.h>
 #include <memory>
 #include "d3dx12.h"
+#include <exception>
+#include <xstring>
 
 class D3DHelper
 {

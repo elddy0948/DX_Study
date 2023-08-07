@@ -22,21 +22,72 @@ D3DApp::D3DApp(HINSTANCE hInstance) : mhAppInst(hInstance)
 
 D3DApp::~D3DApp()
 {
+	if (md3dDevice != nullptr)
+	{
+		FlushCommandQueue();
+	}
 }
 
-LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+HINSTANCE D3DApp::AppInstance() const
 {
-	switch (msg)
+	return mhAppInst;
+}
+
+HWND D3DApp::MainWindow() const
+{
+	return mhMainWnd;
+}
+
+float D3DApp::AspectRatio() const
+{
+	return static_cast<float>(mClientWidth) / mClientHeight;
+}
+
+bool D3DApp::Get4xMsaaState() const
+{
+	return m4xMsaaState;
+}
+
+void D3DApp::Set4xMsaaState(bool value)
+{
+	if (m4xMsaaState != value)
 	{
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		return 0;
-	case WM_QUIT:
-		PostQuitMessage(0);
-		return 0;
+		m4xMsaaState = value;
+		CreateSwapChain();
+		OnResize();
+	}
+}
+
+int D3DApp::Run()
+{
+	MSG msg = { 0 };
+
+	mGameTimer.Reset();
+
+	while (msg.message != WM_QUIT)
+	{
+		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		else
+		{
+			mGameTimer.Tick();
+			if (!mAppPaused)
+			{
+				CalculateFrameStats();
+				Update(mGameTimer);
+				Draw(mGameTimer);
+			}
+			else
+			{
+				Sleep(100);
+			}
+		}
 	}
 
-	return DefWindowProc(hwnd, msg, wParam, lParam);
+	return (int)msg.wParam;
 }
 
 bool D3DApp::InitMainWindow()
@@ -139,33 +190,8 @@ bool D3DApp::InitD3D()
 	CreateCommandObjects();
 	CreateSwapChain();
 	CreateRtvAndDsvDescriptorHeap();
-	CreateRenderTargetView();
-	CreateDepthStencilBuffer();
-	CreateDepthStencilView();
-	SetViewports();
-	SetScissorRect();
-}
 
-int D3DApp::Run()
-{
-	MSG msg = { 0 };
-
-	mGameTimer.Reset();
-
-	while (msg.message != WM_QUIT)
-	{
-		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		else
-		{
-			mGameTimer.Tick();
-		}
-	}
-
-	return (int)msg.wParam;
+	return true;
 }
 
 void D3DApp::CreateCommandObjects()
@@ -183,10 +209,10 @@ void D3DApp::CreateCommandObjects()
 
 	// command list
 	ThrowIfFailed(md3dDevice->CreateCommandList(
-		0, 
-		D3D12_COMMAND_LIST_TYPE_DIRECT, 
+		0,
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
 		mDirectCmdListAllocator.Get(),
-		nullptr, 
+		nullptr,
 		IID_PPV_ARGS(mCommandList.GetAddressOf())));
 
 	mCommandList->Close();
@@ -213,10 +239,77 @@ void D3DApp::CreateSwapChain()
 	sd.BufferCount = SwapChainBufferCount;
 	sd.OutputWindow = mhMainWnd;
 	sd.Windowed = true;
-	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 	ThrowIfFailed(mdxgiFactory->CreateSwapChain(mCommandQueue.Get(), &sd, mSwapChain.GetAddressOf()));
+}
+
+void D3DApp::FlushCommandQueue()
+{
+	mCurrentFence++;
+
+	ThrowIfFailed(mCommandQueue->Signal(mFence.Get(), mCurrentFence));
+
+	if (mFence->GetCompletedValue() < mCurrentFence)
+	{
+		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+		ThrowIfFailed(mFence->SetEventOnCompletion(mCurrentFence, eventHandle));
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
+	}
+}
+
+bool D3DApp::Initialize()
+{
+	if (!InitMainWindow()) return false;
+	if (!InitD3D()) return false;
+	OnResize();
+	return true;
+}
+
+LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+	case WM_ACTIVATE:
+	{
+		if (LOWORD(wParam) == WA_INACTIVE)
+		{
+			mAppPaused = true;
+			mGameTimer.Stop();
+		}
+		else
+		{ 
+			mAppPaused = false;
+			mGameTimer.Start();
+		}
+		return 0;
+	}
+	case WM_ENTERSIZEMOVE:
+	{
+		mAppPaused = true;
+		mResizing = true;
+		mGameTimer.Stop();
+		return 0;
+	}
+	case WM_EXITSIZEMOVE:
+	{
+		mAppPaused = false;
+		mResizing = false;
+		mGameTimer.Start();
+		OnResize();
+		return 0;
+	}
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	case WM_QUIT:
+		PostQuitMessage(0);
+		return 0;
+	}
+
+	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
 void D3DApp::CreateRtvAndDsvDescriptorHeap()
@@ -236,20 +329,76 @@ void D3DApp::CreateRtvAndDsvDescriptorHeap()
 	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	dsvHeapDesc.NodeMask = 0;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(mDsvHeap.GetAddressOf())));
-
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::CurrentBackBufferView() const
+void D3DApp::OnResize()
 {
-	return CD3DX12_CPU_DESCRIPTOR_HANDLE(
-		mRtvHeap->GetCPUDescriptorHandleForHeapStart(),
-		mCurrentBackBuffer,
-		mRtvDescriptorSize);
+	assert(md3dDevice);
+	assert(mSwapChain);
+	assert(mDirectCmdListAllocator);
+
+	FlushCommandQueue();
+
+	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAllocator.Get(), nullptr));
+
+	for (int i = 0; i < SwapChainBufferCount; ++i)
+	{
+		mSwapChainBuffer[i].Reset();
+	}
+	mDepthStencilBuffer.Reset();
+
+	ThrowIfFailed(mSwapChain->ResizeBuffers(
+		SwapChainBufferCount,
+		mClientWidth,
+		mClientHeight,
+		mBackBufferFormat,
+		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+	mCurrentBackBuffer = 0;
+
+	CreateRenderTargetView();
+	CreateDepthStencilBuffer();
+	CreateDepthStencilView();
+
+	// execute resize commands
+	ThrowIfFailed(mCommandList->Close());
+	ID3D12CommandList* cmdLists[] = { mCommandList.Get() };
+	mCommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+
+	FlushCommandQueue();
+
+	mScreenViewport.TopLeftX = 0.0f;
+	mScreenViewport.TopLeftY = 0.0f;
+	mScreenViewport.Width = static_cast<float>(mClientWidth);
+	mScreenViewport.Height = static_cast<float>(mClientHeight);
+	mScreenViewport.MinDepth = 0.0f;
+	mScreenViewport.MaxDepth = 1.0f;
+
+	mScissorRect = { 0, 0, mClientWidth, mClientHeight };
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::DepthStencilView() const
+void D3DApp::CalculateFrameStats()
 {
-	return mDsvHeap->GetCPUDescriptorHandleForHeapStart();
+	static int frameCount = 0;
+	static float timeElapsed = 0.0f;
+	frameCount++;
+
+	if ((mGameTimer.GameTime() - timeElapsed) >= 1.0f)
+	{
+		using namespace std;
+
+		float fps = (float)frameCount;
+		float mspf = 1000.0f / fps;
+
+		wstring fpsStr = std::to_wstring(fps);
+		wstring mspfStr = std::to_wstring(mspf);
+
+		wstring windowText = mMainWndCaption + L" fps: " + fpsStr + L" mspf: " + mspfStr;
+
+		SetWindowText(mhMainWnd, windowText.c_str());
+
+		frameCount = 0;
+		timeElapsed += 1.0f;
+	}
 }
 
 void D3DApp::CreateRenderTargetView()
@@ -310,23 +459,4 @@ void D3DApp::CreateDepthStencilView()
 			mDepthStencilBuffer.Get(),
 			D3D12_RESOURCE_STATE_COMMON,
 			D3D12_RESOURCE_STATE_DEPTH_WRITE));
-}
-
-void D3DApp::SetViewports()
-{
-	D3D12_VIEWPORT viewport = {};
-	viewport.TopLeftX = 0.0f;
-	viewport.TopLeftY = 0.0f;
-	viewport.Width = static_cast<float>(mClientWidth);
-	viewport.Height = static_cast<float>(mClientHeight);
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-
-	mCommandList->RSSetViewports(1, &viewport);
-}
-
-void D3DApp::SetScissorRect()
-{
-	mScissorRect = { 0, 0, mClientWidth / 2, mClientHeight / 2 };
-	mCommandList->RSSetScissorRects(1, &mScissorRect);
 }

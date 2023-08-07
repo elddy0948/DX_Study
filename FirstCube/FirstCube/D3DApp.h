@@ -18,30 +18,65 @@ public:
 public:
 	static D3DApp* GetApp();
 
-	bool InitMainWindow();
-	bool InitD3D();
+	HINSTANCE AppInstance() const;
+	HWND MainWindow() const;
+	float AspectRatio() const;
+
+	bool Get4xMsaaState() const;
+	void Set4xMsaaState(bool value);
+
 	int Run();
 
-	void CreateCommandObjects();
-	void CreateSwapChain();
-	void CreateRtvAndDsvDescriptorHeap();
-
-	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
-	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
-
-	void CreateRenderTargetView();
-	void CreateDepthStencilBuffer();
-	void CreateDepthStencilView();
-	void SetViewports();
-	void SetScissorRect();
-	
+	virtual bool Initialize();
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:
+	virtual void CreateRtvAndDsvDescriptorHeap();
+	virtual void OnResize();
+	virtual void Update(const GameTimer& gt) = 0;
+	virtual void Draw(const GameTimer& gt) = 0;
+
+protected:
+	bool InitMainWindow();
+	bool InitD3D();
+	void CreateCommandObjects();
+	void CreateSwapChain();
+
+	void FlushCommandQueue();
+
+	ID3D12Resource* CurrentBackBuffer() const
+	{
+		return mSwapChainBuffer[mCurrentBackBuffer].Get();
+	}
+
+	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const
+	{
+		return CD3DX12_CPU_DESCRIPTOR_HANDLE(
+			mRtvHeap->GetCPUDescriptorHandleForHeapStart(),
+			mCurrentBackBuffer,
+			mRtvDescriptorSize);
+	}
+
+	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const
+	{
+		return mDsvHeap->GetCPUDescriptorHandleForHeapStart();
+	}
+
+	void CalculateFrameStats();
+	void CreateRenderTargetView();
+	void CreateDepthStencilBuffer();
+	void CreateDepthStencilView();
+	
+protected:
 	static D3DApp* mApp;
+
+	bool mAppPaused = false;
+	bool mResizing = false;
 
 	HINSTANCE mhAppInst = nullptr;
 	HWND mhMainWnd = nullptr;
+
+	UINT64 mCurrentFence = 0;
 
 	Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;
 	Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;
@@ -74,6 +109,7 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D12Resource> mDepthStencilBuffer;
 	DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D16_UNORM;
 
+	D3D12_VIEWPORT mScreenViewport;
 	D3D12_RECT mScissorRect;
 
 	GameTimer mGameTimer;
