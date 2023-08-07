@@ -1,6 +1,7 @@
 #pragma once
 
 #include "D3DHelper.h"
+#include "GameTimer.h"
 
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
@@ -74,6 +75,8 @@ protected:
 	DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D16_UNORM;
 
 	D3D12_RECT mScissorRect;
+
+	GameTimer mGameTimer;
 
 	std::wstring mMainWndCaption = L"First Cube";
 
