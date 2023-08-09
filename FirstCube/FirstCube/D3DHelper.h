@@ -20,6 +20,7 @@
 #include <sstream>
 #include <cassert>
 #include <initguid.h>
+
 #include "d3dx12.h"
 #include "DxException.h"
 
@@ -32,6 +33,14 @@ public:
 		const void* initData,
 		UINT64 byteSize,
 		Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer);
+
+	static UINT CalcConstantBufferByteSize(UINT byteSize);
+
+	static Microsoft::WRL::ComPtr<ID3DBlob> CompileShader(
+		const std::wstring& filename,
+		const D3D_SHADER_MACRO* defines,
+		const std::string& entrypoint,
+		const std::string& target);
 };
 
 inline std::wstring AnsiToWString(const std::string& str)
@@ -52,6 +61,61 @@ static inline CD3DX12_RESOURCE_DESC Buffer(
 		DXGI_FORMAT_UNKNOWN, 1, 0,
 		D3D12_TEXTURE_LAYOUT_ROW_MAJOR, flags);
 }
+
+struct SubmeshGeometry
+{
+	UINT IndexCount = 0;
+	UINT StartIndexLocation = 0;
+	INT BaseVertexLocation = 0;
+
+	DirectX::BoundingBox Bounds;
+};
+
+struct MeshGeometry
+{
+	std::string Name;
+
+	Microsoft::WRL::ComPtr<ID3DBlob> VertexBufferCPU = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> IndexBufferCPU = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferGPU = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferGPU = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferUploader = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferUploader = nullptr;
+
+
+	UINT VertexByteStride = 0;
+	UINT VertexBufferByteSize = 0;
+	DXGI_FORMAT IndexFormat = DXGI_FORMAT_R16_UINT;
+	UINT indexBufferByteSize = 0;
+
+	std::unordered_map<std::string, SubmeshGeometry> DrawArgs;
+
+	D3D12_VERTEX_BUFFER_VIEW VertexBufferView() const
+	{
+		D3D12_VERTEX_BUFFER_VIEW vbv;
+		vbv.BufferLocation = VertexBufferGPU->GetGPUVirtualAddress();
+		vbv.StrideInBytes = VertexByteStride;
+		vbv.SizeInBytes = VertexBufferByteSize;
+		return vbv;
+	}
+
+	D3D12_INDEX_BUFFER_VIEW IndexBufferView() const
+	{
+		D3D12_INDEX_BUFFER_VIEW ibv;
+		ibv.BufferLocation = IndexBufferGPU->GetGPUVirtualAddress();
+		ibv.Format = IndexFormat;
+		ibv.SizeInBytes = indexBufferByteSize;
+		return ibv;
+	}
+
+	void DisposeUploaders()
+	{
+		VertexBufferUploader = nullptr;
+		IndexBufferUploader = nullptr;
+	}
+};
 
 #ifndef ThrowIfFailed
 #define ThrowIfFailed(x) \

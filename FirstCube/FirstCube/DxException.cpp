@@ -1,13 +1,13 @@
 #include "DxException.h"
 
-DxException::DxException(HRESULT hr, const std::wstring& functionName, const std::wstring& fileName, int lineNumber) :
-    ErrorCode(hr),
-    FunctionName(functionName),
-    FileName(fileName),
-    LineNumber(lineNumber)
-{}
+DxException::DxException(HRESULT hr, const std::wstring &functionName, const std::wstring &fileName, int lineNumber) : ErrorCode(hr),
+                                                                                                                       FunctionName(functionName),
+                                                                                                                       FileName(fileName),
+                                                                                                                       LineNumber(lineNumber)
+{
+}
 
-std::wstring DxException::ToString()const
+std::wstring DxException::ToString() const
 {
     // Get the string description of the error code.
     _com_error err(ErrorCode);

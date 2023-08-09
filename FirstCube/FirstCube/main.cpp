@@ -1,5 +1,5 @@
 #include <iostream>
-#include "BackgroundApp.h"
+#include "DrawApp.h"
 
 int WINAPI WinMain(
 	HINSTANCE hInstance,
@@ -9,14 +9,13 @@ int WINAPI WinMain(
 {
 	try
 	{
-		BackgroundApp ba(hInstance);
+		DrawApp da(hInstance);
 
-		if (!ba.Initialize())
+		if (!da.Initialize())
 		{
 			return 0;
 		}
-
-		return ba.Run();
+		return da.Run();
 	}
 	catch (DxException& e)
 	{
