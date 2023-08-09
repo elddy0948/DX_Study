@@ -30,10 +30,6 @@ public:
 	~DrawApp();
 
 	virtual bool Initialize() override;
-
-	void SetupInputElements();
-	void CreateVertices2();
-	void SetupIndexBuffer();
 private:
 	virtual void OnResize() override;
 	virtual void Update(const GameTimer& gt) override;
@@ -57,7 +53,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3DBlob> mVSByteCode = nullptr; // Vertex shader byte code
 	Microsoft::WRL::ComPtr<ID3DBlob> mPSByteCode = nullptr;	// Pixel shader byte code
 
-	std::vector<D3D12_INPUT_LAYOUT_DESC> mInputLayout;
+	std::vector<D3D12_INPUT_ELEMENT_DESC> mInputLayout;
 
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> mPSO = nullptr;
 
