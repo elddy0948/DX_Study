@@ -1,6 +1,6 @@
 #pragma once
 
-#include <DirectXMath.h>
+#include "D3DHelper.h"
 #include "D3DApp.h"
 #include "UploadBuffer.h"
 
@@ -46,7 +46,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> mRootSignature = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mCBVHeap = nullptr;
 
-	std::unique_ptr<UploadBuffer<ObjectConstants>> mObjectConstantBuffer = nullptr;
+	std::unique_ptr<UploadBuffer<ObjectConstants>> mObjectConstantBuffer;
 
 	std::unique_ptr<MeshGeometry> mBoxGeometry = nullptr;
 
@@ -84,6 +84,4 @@ private:
 	float mTheta = 1.5f * DirectX::XM_PI;
 	float mPi = DirectX::XM_PIDIV4;
 	float mRadius = 5.0f;
-
-	POINT mLastMousePosition;
 };

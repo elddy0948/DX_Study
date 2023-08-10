@@ -42,9 +42,6 @@
     <ClCompile Include="D3DHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UploadBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D3DApp.h">
@@ -70,10 +67,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="MyVertexShader.hlsl">
+    <FxCompile Include="MyVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="MyPixelShader.hlsl">
+    <FxCompile Include="MyPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

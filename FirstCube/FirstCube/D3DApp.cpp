@@ -432,7 +432,7 @@ void D3DApp::CreateDepthStencilBuffer()
 	dsDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 	dsDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
-	D3D12_CLEAR_VALUE optClear;
+	D3D12_CLEAR_VALUE optClear = {};
 	optClear.Format = mDepthStencilFormat;
 	optClear.DepthStencil.Depth = 1.0f;
 	optClear.DepthStencil.Stencil = 0;
