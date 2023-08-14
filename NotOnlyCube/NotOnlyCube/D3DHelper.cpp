@@ -8,24 +8,15 @@ Microsoft::WRL::ComPtr<ID3D12Resource> D3DHelper::CreateDefaultBuffer(
 	Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer)
 {
 	Microsoft::WRL::ComPtr<ID3D12Resource> defaultBuffer;
-
-	D3D12_HEAP_PROPERTIES dbHeapProperties = {};
-	dbHeapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
-	dbHeapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-	dbHeapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-	dbHeapProperties.CreationNodeMask = 1;
-	dbHeapProperties.VisibleNodeMask = 1;
-
-	// default buffer
+	
 	ThrowIfFailed(device->CreateCommittedResource(
-		&dbHeapProperties,
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
-		&::Buffer(byteSize),
+		&CD3DX12_RESOURCE_DESC::Buffer(byteSize),
 		D3D12_RESOURCE_STATE_COMMON,
 		nullptr,
 		IID_PPV_ARGS(defaultBuffer.GetAddressOf())));
 
-	// upload heap
 	ThrowIfFailed(device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 		D3D12_HEAP_FLAG_NONE,

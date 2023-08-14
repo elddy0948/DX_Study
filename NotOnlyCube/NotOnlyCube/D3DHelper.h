@@ -2,24 +2,32 @@
 
 #include <windows.h>
 #include <wrl.h>
-
+#include <d3dx12.h>
 #include <dxgi1_4.h>
 #include <d3d12.h>
-#include <d3dcompiler.h>
+#include <D3Dcompiler.h>
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
-
 #include <string>
 #include <memory>
 #include <algorithm>
 #include <vector>
 #include <array>
 #include <unordered_map>
+#include <cstdint>
+#include <fstream>
+#include <sstream>
 #include <cassert>
+#include <initguid.h>
 
 #include "DxException.h"
+
+#pragma comment(lib,"d3dcompiler.lib")
+#pragma comment(lib, "D3D12.lib")
+#pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "dxguid.lib")
 
 class D3DHelper
 {
@@ -45,28 +53,6 @@ inline std::wstring AnsiToWString(const std::string& str)
 	WCHAR buffer[512];
 	MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, buffer, 512);
 	return std::wstring(buffer);
-}
-
-static inline D3D12_RESOURCE_DESC Buffer(
-	UINT64 width,
-	D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE,
-	UINT64 alignment = 0)
-{
-	D3D12_RESOURCE_DESC rd;
-	
-	rd.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	rd.Alignment = alignment;
-	rd.Width = width;
-	rd.Height = 1;
-	rd.DepthOrArraySize = 1;
-	rd.MipLevels = 1;
-	rd.Format = DXGI_FORMAT_UNKNOWN;
-	rd.SampleDesc.Count = 1;
-	rd.SampleDesc.Quality = 0;
-	rd.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-	rd.Flags = flags;
-
-	return rd;
 }
 
 struct SubmeshGeometry
