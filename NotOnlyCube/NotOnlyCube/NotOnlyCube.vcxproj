@@ -129,10 +129,14 @@
   <ItemGroup>
     <ClInclude Include="D3DHelper.h" />
     <ClInclude Include="DxException.h" />
+    <ClInclude Include="GameTimer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BaseApp.cpp" />
     <ClCompile Include="D3DHelper.cpp" />
     <ClCompile Include="DxException.cpp" />
+    <ClCompile Include="BaseApp.h" />
+    <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

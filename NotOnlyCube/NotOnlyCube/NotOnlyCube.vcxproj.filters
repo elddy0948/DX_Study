@@ -21,6 +21,9 @@
     <ClInclude Include="DxException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameTimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="D3DHelper.cpp">
@@ -30,6 +33,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseApp.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameTimer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
