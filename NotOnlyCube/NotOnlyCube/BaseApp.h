@@ -25,15 +25,6 @@ public:
 
 	int Run();
 
-	virtual bool Initialize();
-	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-protected:
-	virtual void CreateRTVAndDSVDescriptorHeap();
-	virtual void OnResize();
-	virtual void Update(const GameTimer& gt) = 0;
-	virtual void Draw(const GameTimer& gt) = 0;
-
 protected:
 	bool InitMainWindow();
 	bool InitD3D();
@@ -66,6 +57,15 @@ protected:
 		return mDepthStencilViewHeap->GetCPUDescriptorHandleForHeapStart();
 	}
 
+public:
+	virtual bool Initialize();
+	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+protected:
+	virtual void CreateRTVAndDSVDescriptorHeap();
+	virtual void OnResize();
+	virtual void Update(const GameTimer& gt) = 0;
+	virtual void Draw(const GameTimer& gt) = 0;
 
 private:
 	static BaseApp* mApp;

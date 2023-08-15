@@ -219,3 +219,209 @@ void BaseApp::CreateCommandObjects()
 
 	mCommandList->Close();
 }
+
+void BaseApp::CreateSwapChain()
+{
+	mSwapChain.Reset();
+
+	DXGI_SWAP_CHAIN_DESC sd = {};
+
+	sd.BufferDesc.Width = mClientWidth;
+	sd.BufferDesc.Height = mClientHeight;
+	sd.BufferDesc.RefreshRate.Numerator = 60;
+	sd.BufferDesc.RefreshRate.Denominator = 1;
+	sd.BufferDesc.Format = mBackBufferFormat;
+	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+
+	sd.SampleDesc.Count = m4xMsaaState ? 4 : 1;
+	sd.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
+
+	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	sd.BufferCount = SwapChainBufferCount;
+	sd.OutputWindow = mHMainWindow;
+	sd.Windowed = true;
+	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+	ThrowIfFailed(mDXGIFactory->CreateSwapChain(
+		mCommandQueue.Get(),
+		&sd,
+		mSwapChain.GetAddressOf()
+	));
+}
+
+void BaseApp::FlushCommandQueue()
+{
+	mCurrentFence++;
+	ThrowIfFailed(mCommandQueue->Signal(mFence.Get(), mCurrentFence));
+
+	if (mFence->GetCompletedValue() < mCurrentFence)
+	{
+		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+		ThrowIfFailed(mFence->SetEventOnCompletion(
+			mCurrentFence,
+			eventHandle
+		));
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
+	}
+}
+
+void BaseApp::CalculateFrameStats()
+{
+	static int frameCount = 0;
+	static float timeElapsed = 0.0f;
+	frameCount++;
+
+	if ((mGameTimer.GameTime() - timeElapsed) >= 1.0f)
+	{
+		using namespace std;
+
+		float fps = (float)frameCount;
+		float mspf = 1000.0f / fps;
+
+		wstring fpsStr = std::to_wstring(fps);
+		wstring mspfStr = std::to_wstring(mspf);
+
+		wstring windowText = mMainWindowCaption + L" fps: " + fpsStr + L" mspf: " + mspfStr;
+
+		SetWindowText(mHMainWindow, windowText.c_str());
+
+		frameCount = 0;
+		timeElapsed += 1.0f;
+	}
+}
+
+void BaseApp::CreateRenderTargetView()
+{
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(mRenderTargetViewHeap->GetCPUDescriptorHandleForHeapStart());
+
+	for (UINT i = 0; i <SwapChainBufferCount; i++)
+	{
+		ThrowIfFailed(mSwapChain->GetBuffer(
+			i,
+			IID_PPV_ARGS(&mSwapChainBuffer[i])
+		));
+
+		mDevice->CreateRenderTargetView(
+			mSwapChainBuffer[i].Get(),
+			nullptr,
+			rtvHeapHandle
+		);
+
+		rtvHeapHandle.Offset(1, mRTVDescriptorSize);
+	}
+}
+
+void BaseApp::CreateDepthStencilView()
+{
+	mDevice->CreateDepthStencilView(
+		mDepthStencilBuffer.Get(),
+		nullptr,
+		DepthStencilView()
+	);
+
+	mCommandList->ResourceBarrier(
+		1,
+		&CD3DX12_RESOURCE_BARRIER::Transition(
+			mDepthStencilBuffer.Get(),
+			D3D12_RESOURCE_STATE_COMMON,
+			D3D12_RESOURCE_STATE_DEPTH_WRITE
+		)
+	);
+}
+
+void BaseApp::CreateDepthStencilBuffer()
+{
+	D3D12_RESOURCE_DESC dsDesc = {};
+
+	dsDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	dsDesc.Alignment = 0;
+	dsDesc.Width = mClientWidth;
+	dsDesc.Height = mClientHeight;
+	dsDesc.DepthOrArraySize = 1;
+	dsDesc.MipLevels = 1;
+	dsDesc.Format = mDepthStencilFormat;
+	dsDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
+	dsDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
+	dsDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	dsDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+	D3D12_CLEAR_VALUE optClear = {};
+
+	optClear.Format = mDepthStencilFormat;
+	optClear.DepthStencil.Depth = 1.0f;
+	optClear.DepthStencil.Stencil = 0;
+
+	ThrowIfFailed(mDevice->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&dsDesc,
+		D3D12_RESOURCE_STATE_COMMON,
+		&optClear,
+		IID_PPV_ARGS(mDepthStencilBuffer.GetAddressOf())
+	));
+}
+
+bool BaseApp::Initialize()
+{
+	if (!InitMainWindow()) return false;
+	if (!InitD3D()) return false;
+	OnResize();
+	return true;
+}
+
+LRESULT BaseApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+	case WM_ACTIVATE:
+	{
+		if (LOWORD(wParam) == WA_INACTIVE)
+		{
+			mAppPaused = true;
+			mGameTimer.Stop();
+		}
+		else
+		{
+			mAppPaused = false;
+			mGameTimer.Start();
+		}
+		return 0;
+	}
+	case WM_ENTERSIZEMOVE:
+	{
+		mAppPaused = true;
+		mResizing = true;
+		mGameTimer.Stop();
+		return 0;
+	}
+	case WM_EXITSIZEMOVE:
+	{
+		mAppPaused = false;
+		mResizing = false;
+		mGameTimer.Start();
+		OnResize();
+		return 0;
+	}
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	case WM_QUIT:
+		PostQuitMessage(0);
+		return 0;
+	}
+
+	return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+void BaseApp::CreateRTVAndDSVDescriptorHeap()
+{
+
+}
+
+void BaseApp::OnResize()
+{
+
+}
