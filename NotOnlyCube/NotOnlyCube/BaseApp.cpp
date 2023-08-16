@@ -418,10 +418,79 @@ LRESULT BaseApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 void BaseApp::CreateRTVAndDSVDescriptorHeap()
 {
+	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
 
+	rtvHeapDesc.NumDescriptors = SwapChainBufferCount;
+	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	rtvHeapDesc.NodeMask = 0;
+
+	ThrowIfFailed(mDevice->CreateDescriptorHeap(
+		&rtvHeapDesc,
+		IID_PPV_ARGS(mRenderTargetViewHeap.GetAddressOf())
+	));
+
+	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
+
+	dsvHeapDesc.NumDescriptors = 1;
+	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	dsvHeapDesc.NodeMask = 0;
+
+	ThrowIfFailed(mDevice->CreateDescriptorHeap(
+		&dsvHeapDesc,
+		IID_PPV_ARGS(mDepthStencilViewHeap.GetAddressOf())
+	));
 }
 
 void BaseApp::OnResize()
 {
+	assert(mDevice);
+	assert(mSwapChain);
+	assert(mDirectCommandListAllocator);
 
+	FlushCommandQueue();
+
+	ThrowIfFailed(mCommandList->Reset(
+		mDirectCommandListAllocator.Get(),
+		nullptr
+	));
+
+	for (int i = 0; i < SwapChainBufferCount; ++i)
+	{
+		mSwapChainBuffer[i].Reset();
+	}
+	mDepthStencilBuffer.Reset();
+
+	ThrowIfFailed(mSwapChain->ResizeBuffers(
+		SwapChainBufferCount,
+		mClientWidth,
+		mClientHeight,
+		mBackBufferFormat,
+		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
+	));
+	mCurrentBackBuffer = 0;
+
+	CreateRenderTargetView();
+	CreateDepthStencilView();
+	CreateDepthStencilBuffer();
+
+	ThrowIfFailed(mCommandList->Close());
+
+	ID3D12CommandList* cmdLists[] = { mCommandList.Get() };
+	mCommandQueue->ExecuteCommandLists(
+		_countof(cmdLists),
+		cmdLists
+	);
+
+	FlushCommandQueue();
+
+	mScreenViewport.TopLeftX = 0.0f;
+	mScreenViewport.TopLeftY = 0.0f;
+	mScreenViewport.Width = static_cast<float>(mClientWidth);
+	mScreenViewport.Height = static_cast<float>(mClientHeight);
+	mScreenViewport.MinDepth = 0.0f;
+	mScreenViewport.MaxDepth = 1.0f;
+
+	mScissorRect = { 0, 0, mClientWidth, mClientHeight };
 }
