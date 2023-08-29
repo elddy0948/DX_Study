@@ -127,10 +127,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BaseApp.cpp" />
     <ClCompile Include="DxException.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BaseApp.h" />
     <ClInclude Include="DxException.h" />
     <ClInclude Include="Helper.h" />
   </ItemGroup>
