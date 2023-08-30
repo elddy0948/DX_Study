@@ -25,7 +25,6 @@ protected:
 
 	void CheckFeatureSupport();
 
-	void CreateCommandObjects();
 
 	void FlushCommandQueue();
 
@@ -33,6 +32,7 @@ private:
 	void CreateDevice();
 	void CreateFenceAndGetDescriptorSize();
 	void Check4xMSAAQualityLevels();
+	void CreateCommandObjects();
 
 private:
 	HINSTANCE mhInstance;

@@ -67,6 +67,32 @@ void BaseApp::Check4xMSAAQualityLevels()
 	assert(m_4xMSAAQuality > 0 && "Unexpected MSAA quality level.");
 }
 
+void BaseApp::CreateCommandObjects()
+{
+	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+	ThrowIfFailed(m_device->CreateCommandQueue(
+		&queueDesc,
+		IID_PPV_ARGS(&m_commandQueue)
+	));
+
+	ThrowIfFailed(m_device->CreateCommandAllocator(
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
+		IID_PPV_ARGS(m_commandAllocator.GetAddressOf())
+	));
+
+	ThrowIfFailed(m_device->CreateCommandList(
+		0,
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
+		m_commandAllocator.Get(),
+		nullptr,
+		IID_PPV_ARGS(m_commandList.GetAddressOf())
+	));
+
+	m_commandList->Close();
+}
+
 void BaseApp::LogAdapters()
 {
 	UINT i = 0;
@@ -167,30 +193,6 @@ void BaseApp::CheckFeatureSupport()
 		D3D12_FEATURE_FEATURE_LEVELS,
 		&featureLevelsInfo,
 		sizeof(featureLevels)
-	));
-}
-
-void BaseApp::CreateCommandObjects()
-{
-	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
-	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-	ThrowIfFailed(m_device->CreateCommandQueue(
-		&queueDesc,
-		IID_PPV_ARGS(&m_commandQueue)
-	));
-
-	ThrowIfFailed(m_device->CreateCommandAllocator(
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		IID_PPV_ARGS(&m_commandAllocator)
-	));
-
-	ThrowIfFailed(m_device->CreateCommandList(
-		0,
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		m_commandAllocator.Get(),
-		nullptr,
-		IID_PPV_ARGS(&m_commandList)
 	));
 }
 
