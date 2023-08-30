@@ -104,10 +104,48 @@ void BaseApp::CheckFeatureSupport()
 	featureLevelsInfo.NumFeatureLevels = 2;
 	featureLevelsInfo.pFeatureLevelsRequested = featureLevels;
 
-	ThrowIfFailed(m_d3dDevice->CheckFeatureSupport(
+	ThrowIfFailed(m_device->CheckFeatureSupport(
 		D3D12_FEATURE_FEATURE_LEVELS,
 		&featureLevelsInfo,
 		sizeof(featureLevels)
 	));
 }
 
+void BaseApp::CreateCommandObjects()
+{
+	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+	ThrowIfFailed(m_device->CreateCommandQueue(
+		&queueDesc,
+		IID_PPV_ARGS(&m_commandQueue)
+	));
+
+	ThrowIfFailed(m_device->CreateCommandAllocator(
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
+		IID_PPV_ARGS(&m_commandAllocator)
+	));
+
+	ThrowIfFailed(m_device->CreateCommandList(
+		0,
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
+		m_commandAllocator.Get(),
+		nullptr,
+		IID_PPV_ARGS(&m_commandList)
+	));
+}
+
+void BaseApp::FlushCommandQueue()
+{
+	m_currentFence++;
+
+	ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), m_currentFence));
+
+	if (m_fence->GetCompletedValue() < m_currentFence)
+	{
+		HANDLE eventHandle = CreateEventEx(nullptr, nullptr, false, EVENT_ALL_ACCESS);
+		ThrowIfFailed(m_fence->SetEventOnCompletion(m_currentFence, eventHandle));
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
+	}
+}

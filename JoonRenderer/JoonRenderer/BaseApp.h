@@ -22,11 +22,19 @@ protected:
 
 	void CheckFeatureSupport();
 
+	void CreateCommandObjects();
+
+	void FlushCommandQueue();
+
 private:
 	HINSTANCE mhInstance;
 
+	Microsoft::WRL::ComPtr<ID3D12Device> m_device = nullptr;
 	Microsoft::WRL::ComPtr<IDXGIFactory> m_dxgiFactory = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Device> m_d3dDevice = nullptr;
-
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_commandQueue = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_commandAllocator = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_commandList = nullptr;
+
+	UINT m_currentFence = 0;
+	Microsoft::WRL::ComPtr<ID3D12Fence> m_fence = nullptr;
 };
