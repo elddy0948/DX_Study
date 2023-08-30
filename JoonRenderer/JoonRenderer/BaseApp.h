@@ -2,10 +2,13 @@
 
 #include <wrl.h>
 #include <d3d12.h>
-#include <dxgi.h>
+#include <dxgi1_6.h>
 #include <vector>
 
 #include "Helper.h"
+
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "dxgi.lib")
 
 class BaseApp
 {
@@ -16,6 +19,7 @@ public:
 	~BaseApp();
 
 protected:
+	void CreateDevice();
 	void LogAdapters();
 	void LogAdapterOutputs(IDXGIAdapter* adapter);
 	void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
@@ -30,7 +34,7 @@ private:
 	HINSTANCE mhInstance;
 
 	Microsoft::WRL::ComPtr<ID3D12Device> m_device = nullptr;
-	Microsoft::WRL::ComPtr<IDXGIFactory> m_dxgiFactory = nullptr;
+	Microsoft::WRL::ComPtr<IDXGIFactory6> m_dxgiFactory = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_commandQueue = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_commandAllocator = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_commandList = nullptr;
