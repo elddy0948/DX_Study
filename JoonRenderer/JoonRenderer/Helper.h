@@ -5,7 +5,7 @@
 
 #include "DxException.h"
 
-inline std::wstring AnsiToString(const std::string& str)
+inline std::wstring AnsiToWString(const std::string& str)
 {
 	WCHAR buffer[512];
 	MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, buffer, 512);

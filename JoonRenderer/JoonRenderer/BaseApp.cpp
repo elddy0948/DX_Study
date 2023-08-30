@@ -90,3 +90,24 @@ void BaseApp::LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format)
 		::OutputDebugString(text.c_str());
 	}
 }
+
+void BaseApp::CheckFeatureSupport()
+{
+	D3D_FEATURE_LEVEL featureLevels[2] =
+	{
+		D3D_FEATURE_LEVEL_12_0,
+		D3D_FEATURE_LEVEL_11_0,
+	};
+
+	D3D12_FEATURE_DATA_FEATURE_LEVELS featureLevelsInfo;
+
+	featureLevelsInfo.NumFeatureLevels = 2;
+	featureLevelsInfo.pFeatureLevelsRequested = featureLevels;
+
+	ThrowIfFailed(md3dDevice->CheckFeatureSupport(
+		D3D12_FEATURE_FEATURE_LEVELS,
+		&featureLevelsInfo,
+		sizeof(featureLevels)
+	));
+}
+

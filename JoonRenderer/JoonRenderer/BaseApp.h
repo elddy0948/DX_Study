@@ -4,7 +4,8 @@
 #include <d3d12.h>
 #include <dxgi.h>
 #include <vector>
-#include <string>
+
+#include "Helper.h"
 
 class BaseApp
 {
@@ -19,9 +20,12 @@ protected:
 	void LogAdapterOutputs(IDXGIAdapter* adapter);
 	void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
 
+	void CheckFeatureSupport();
 
 private:
 	HINSTANCE mhInstance;
 
 	Microsoft::WRL::ComPtr<IDXGIFactory> mdxgiFactory = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice = nullptr;
 };
