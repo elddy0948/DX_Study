@@ -10,6 +10,7 @@
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "d3dcompiler.lib")
 
 class BaseApp
 {
@@ -20,6 +21,7 @@ public:
 	~BaseApp();
 
 protected:
+	void LoadPipeline();
 	void LogAdapters();
 	void LogAdapterOutputs(IDXGIAdapter* adapter);
 	void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
@@ -45,7 +47,7 @@ private:
 	static const int SwapChainBufferCount = 2;
 
 	HINSTANCE mhInstance;
-	HWND m_hWnd;
+	HWND m_hwnd;
 
 	UINT m_currentFence = 0;
 	UINT m_rtvDescriptorSize = 0;

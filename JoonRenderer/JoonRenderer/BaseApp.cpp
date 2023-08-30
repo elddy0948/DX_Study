@@ -112,7 +112,7 @@ void BaseApp::CreateSwapChain()
 
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.BufferCount = SwapChainBufferCount;
-	swapChainDesc.OutputWindow = m_hWnd;
+	swapChainDesc.OutputWindow = m_hwnd;
 	swapChainDesc.Windowed = true;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
@@ -225,6 +225,19 @@ void BaseApp::SetupViewportAndScissorRect()
 
 	m_scissorRect = { 0, 0, m_clientWidth / 2, m_clientHeight / 2 };
 	m_commandList->RSSetScissorRects(1, &m_scissorRect);
+}
+
+void BaseApp::LoadPipeline()
+{
+	CreateDevice();
+	CreateFenceAndGetDescriptorSize();
+	Check4xMSAAQualityLevels();
+	CreateCommandObjects();
+	CreateSwapChain();
+	CreateDescriptorHeaps();
+	CreateRenterTargetView();
+	CreateDepthStencilView();
+	SetupViewportAndScissorRect();
 }
 
 void BaseApp::LogAdapters()
