@@ -33,9 +33,13 @@ private:
 	void CreateFenceAndGetDescriptorSize();
 	void Check4xMSAAQualityLevels();
 	void CreateCommandObjects();
+	void CreateSwapChain();
 
 private:
+	static const int SwapChainBufferCount = 2;
+
 	HINSTANCE mhInstance;
+	HWND m_hWnd;
 
 	Microsoft::WRL::ComPtr<ID3D12Device> m_device = nullptr;
 	Microsoft::WRL::ComPtr<IDXGIFactory6> m_dxgiFactory = nullptr;
@@ -50,7 +54,12 @@ private:
 	UINT m_dsvDescriptorSize = 0;
 	UINT m_cbvsrvDescriptorSize = 0;
 
-	DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
+	DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	UINT m_4xMSAAQuality = 0;
 	bool m_4xMSAAState = false;
+
+	Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain = nullptr;
+
+	int m_clientWidth = 800;
+	int m_clientHeight = 600;
 };

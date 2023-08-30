@@ -93,6 +93,37 @@ void BaseApp::CreateCommandObjects()
 	m_commandList->Close();
 }
 
+void BaseApp::CreateSwapChain()
+{
+	m_swapChain.Reset();
+
+	DXGI_SWAP_CHAIN_DESC swapChainDesc;
+
+	swapChainDesc.BufferDesc.Width = m_clientWidth;
+	swapChainDesc.BufferDesc.Height = m_clientHeight;
+	swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+	swapChainDesc.BufferDesc.Format = m_backBufferFormat;
+	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+
+	swapChainDesc.SampleDesc.Count = m_4xMSAAState ? 4 : 1;
+	swapChainDesc.SampleDesc.Quality = m_4xMSAAState ? (m_4xMSAAQuality - 1) : 0;
+
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDesc.BufferCount = SwapChainBufferCount;
+	swapChainDesc.OutputWindow = m_hWnd;
+	swapChainDesc.Windowed = true;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+	ThrowIfFailed(m_dxgiFactory->CreateSwapChain(
+		m_commandQueue.Get(),
+		&swapChainDesc,
+		m_swapChain.GetAddressOf()
+	));
+}
+
 void BaseApp::LogAdapters()
 {
 	UINT i = 0;
