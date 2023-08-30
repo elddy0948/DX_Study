@@ -37,6 +37,8 @@ private:
 	void CreateCommandObjects();
 	void CreateSwapChain();
 	void CreateDescriptorHeaps();
+	void CreateRenterTargetView();
+	void CreateDepthStencilView();
 
 private:
 	static const int SwapChainBufferCount = 2;
@@ -51,6 +53,7 @@ private:
 	UINT m_4xMSAAQuality = 0;
 
 	DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+	DXGI_FORMAT m_depthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	bool m_4xMSAAState = false;
 
@@ -67,4 +70,6 @@ private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_rtvHeap = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_dsvHeap = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> m_swapChainBuffer[SwapChainBufferCount];
+	Microsoft::WRL::ComPtr<ID3D12Resource> m_depthStencilBuffer = nullptr;
 };
