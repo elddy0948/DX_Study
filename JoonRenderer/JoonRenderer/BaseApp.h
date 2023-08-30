@@ -39,6 +39,7 @@ private:
 	void CreateDescriptorHeaps();
 	void CreateRenterTargetView();
 	void CreateDepthStencilView();
+	void SetupViewportAndScissorRect();
 
 private:
 	static const int SwapChainBufferCount = 2;
@@ -54,6 +55,9 @@ private:
 
 	DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	DXGI_FORMAT m_depthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	D3D12_VIEWPORT m_viewport;
+	RECT m_scissorRect;
 
 	bool m_4xMSAAState = false;
 

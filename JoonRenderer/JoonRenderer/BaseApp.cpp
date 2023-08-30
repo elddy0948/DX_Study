@@ -212,6 +212,21 @@ void BaseApp::CreateDepthStencilView()
 	ThrowIfFailed(m_commandList->Close());
 }
 
+void BaseApp::SetupViewportAndScissorRect()
+{
+	m_viewport.TopLeftX = 0.0f;
+	m_viewport.TopLeftY = 0.0f;
+	m_viewport.Width = static_cast<float>(m_clientWidth);
+	m_viewport.Height = static_cast<float>(m_clientHeight);
+	m_viewport.MinDepth = 0.0f;
+	m_viewport.MaxDepth = 1.0f;
+
+	m_commandList->RSSetViewports(1, &m_viewport);
+
+	m_scissorRect = { 0, 0, m_clientWidth / 2, m_clientHeight / 2 };
+	m_commandList->RSSetScissorRects(1, &m_scissorRect);
+}
+
 void BaseApp::LogAdapters()
 {
 	UINT i = 0;
