@@ -7,6 +7,7 @@
 #include <d3dx12.h>
 
 #include "Helper.h"
+#include "GameTimer.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -14,14 +15,38 @@
 
 class BaseApp
 {
-public:
+protected:
 	BaseApp(HINSTANCE hInstance);
 	BaseApp(const BaseApp& rhs) = delete;
 	BaseApp& operator=(const BaseApp& rhs) = delete;
-	~BaseApp();
+	virtual ~BaseApp();
+
+public:
+	static BaseApp* GetApp();
+
+	HINSTANCE AppInstance() const;
+	HWND MainWnd() const;
+	float AspectRatio() const;
+
+	bool Get4xMSAAState() const;
+	void Set4xMSAAState(bool state);
+
+	int Run();
+
+	virtual bool Initialize();
+	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:
+	virtual void CreateRTVAndDSVDescriptorHeaps();
+	virtual void OnResize();
+	virtual void Update(const GameTimer& gt) = 0;
+	virtual void Draw(const GameTimer& gt) = 0;
+
+protected:
+	bool InitMainWindow();
+
 	void LoadPipeline();
+
 	void LogAdapters();
 	void LogAdapterOutputs(IDXGIAdapter* adapter);
 	void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
@@ -31,6 +56,8 @@ protected:
 
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
+
+	void CalculateFrameStats();
 
 private:
 	void CreateDevice();
@@ -43,13 +70,14 @@ private:
 	void CreateDepthStencilView();
 	void SetupViewportAndScissorRect();
 
-private:
+protected:
+	static BaseApp* m_app;
 	static const int SwapChainBufferCount = 2;
 
-	HINSTANCE mhInstance;
-	HWND m_hwnd;
+	HINSTANCE m_hInstance = nullptr;
+	HWND m_hwnd = nullptr;
 
-	UINT m_currentFence = 0;
+	UINT64 m_currentFence = 0;
 	UINT m_rtvDescriptorSize = 0;
 	UINT m_dsvDescriptorSize = 0;
 	UINT m_cbvsrvDescriptorSize = 0;
@@ -57,15 +85,25 @@ private:
 
 	DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	DXGI_FORMAT m_depthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	D3D_DRIVER_TYPE m_driverType = D3D_DRIVER_TYPE_HARDWARE;
 
-	D3D12_VIEWPORT m_viewport;
-	RECT m_scissorRect;
+	D3D12_VIEWPORT m_viewport = {};
+	RECT m_scissorRect = {};
+
+	GameTimer m_timer;
 
 	bool m_4xMSAAState = false;
+	bool m_appPaused = false;
+	bool m_minimized = false;
+	bool m_maximized = false;
+	bool m_resizing = false;
+	bool m_fullscreenState = false;
 
 	int m_currentBackBuffer = 0;
 	int m_clientWidth = 800;
 	int m_clientHeight = 600;
+
+	std::wstring m_mainWndCaption = L"Joon Renderer";
 
 	Microsoft::WRL::ComPtr<ID3D12Device> m_device = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12Fence> m_fence = nullptr;

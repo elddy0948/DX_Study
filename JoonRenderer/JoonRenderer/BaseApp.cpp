@@ -1,11 +1,189 @@
 #include "BaseApp.h"
 
-BaseApp::BaseApp(HINSTANCE hInstance) : mhInstance(hInstance)
-{}
+LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	return BaseApp::GetApp()->MsgProc(hwnd, msg, wParam, lParam);
+}
+
+BaseApp* BaseApp::m_app = nullptr;
+
+BaseApp::BaseApp(HINSTANCE hInstance) : m_hInstance(hInstance)
+{
+	assert(m_app == nullptr);
+	m_app = this;
+}
 
 BaseApp::~BaseApp()
 {
+	if (m_device != nullptr)
+	{
+		FlushCommandQueue();
+	}
+}
 
+BaseApp* BaseApp::GetApp()
+{
+	return m_app;
+}
+
+HINSTANCE BaseApp::AppInstance() const
+{
+	return m_hInstance;
+}
+
+HWND BaseApp::MainWnd() const
+{
+	return m_hwnd;
+}
+
+float BaseApp::AspectRatio() const
+{
+	return static_cast<float>(m_clientWidth) / static_cast<float>(m_clientHeight);
+}
+
+bool BaseApp::Get4xMSAAState() const
+{
+	return m_4xMSAAState;
+}
+
+void BaseApp::Set4xMSAAState(bool state)
+{
+	if (m_4xMSAAState != state) 
+	{ 
+		m_4xMSAAState = state;
+		CreateSwapChain();
+		OnResize();
+	}
+}
+
+int BaseApp::Run()
+{
+	MSG msg = { 0 };
+	m_timer.Reset();
+
+	while (msg.message != WM_QUIT)
+	{
+		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		else
+		{
+			m_timer.Tick();
+			if (!m_appPaused)
+			{
+				CalculateFrameStats();
+				Update(m_timer);
+				Draw(m_timer);
+			}
+			else
+			{
+				Sleep(100);
+			}
+		}
+	}
+	return (int)msg.wParam;
+}
+
+bool BaseApp::Initialize()
+{
+	if (!InitMainWindow())
+		return false;
+	LoadPipeline();
+	OnResize();
+
+	return true;
+}
+
+LRESULT BaseApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+	case WM_ACTIVATE:
+		if (LOWORD(wParam) == WA_INACTIVE)
+		{
+			m_appPaused = true;
+			m_timer.Stop();
+		}
+		else
+		{
+			m_appPaused = false;
+			m_timer.Start();
+		}
+		return 0;
+
+	case WM_SIZE:
+		m_clientWidth = LOWORD(lParam);
+		m_clientHeight = HIWORD(lParam);
+		if (m_device)
+		{
+			if (wParam == SIZE_MINIMIZED)
+			{
+				m_appPaused = true;
+				m_minimized = true;
+				m_maximized = false;
+			}
+			else if (wParam == SIZE_MAXIMIZED)
+			{
+				m_appPaused = false;
+				m_minimized = false;
+				m_maximized = true;
+				OnResize();
+			}
+			else if (wParam == SIZE_RESTORED)
+			{
+				if (m_minimized)
+				{
+					m_appPaused = false;
+					m_minimized = false;
+					OnResize();
+				}
+				else if (m_maximized)
+				{
+					m_appPaused = false;
+					m_maximized = true;
+					OnResize();
+				}
+				else if (m_resizing)
+				{
+
+				}
+				else
+				{
+					OnResize();
+				}
+			}
+		}
+		return 0;
+
+	case WM_ENTERSIZEMOVE:
+		m_appPaused = true;
+		m_resizing = true;
+		m_timer.Stop();
+		return 0;
+		
+	case WM_EXITSIZEMOVE:
+		m_appPaused = false;
+		m_resizing = false;
+		m_timer.Start();
+		OnResize();
+		return 0;
+
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+
+	case WM_MENUCHAR:
+		return MAKELRESULT(0, MNC_CLOSE);
+
+	case WM_GETMINMAXINFO:
+		((MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
+		((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
+		return 0;
+	}
+
+	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
 void BaseApp::CreateDevice()
@@ -369,4 +547,30 @@ D3D12_CPU_DESCRIPTOR_HANDLE BaseApp::CurrentBackBufferView() const
 D3D12_CPU_DESCRIPTOR_HANDLE BaseApp::DepthStencilView() const
 {
 	return m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
+}
+
+void BaseApp::CalculateFrameStats()
+{
+	static int frameCount = 0;
+	static float timeElapsed = 0.0f;
+
+	frameCount++;
+
+	if (m_timer.GameTime() - timeElapsed >= 1.0f)
+	{
+		float fps = (float)frameCount;
+		float mspf = 1000.0f / fps;
+
+		std::wstring fpsText = std::to_wstring(fps);
+		std::wstring mspfText = std::to_wstring(mspf);
+
+		std::wstring windowText = m_mainWndCaption +
+			L"fps: " + fpsText +
+			L"mspf: " + mspfText;
+
+		SetWindowText(m_hwnd, windowText.c_str());
+
+		frameCount = 0;
+		timeElapsed += 1.0f;
+	}
 }
