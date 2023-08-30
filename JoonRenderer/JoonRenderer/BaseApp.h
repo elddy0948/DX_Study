@@ -25,7 +25,8 @@ protected:
 private:
 	HINSTANCE mhInstance;
 
-	Microsoft::WRL::ComPtr<IDXGIFactory> mdxgiFactory = nullptr;
+	Microsoft::WRL::ComPtr<IDXGIFactory> m_dxgiFactory = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Device> m_d3dDevice = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_commandQueue = nullptr;
 };

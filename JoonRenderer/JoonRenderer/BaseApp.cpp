@@ -14,7 +14,7 @@ void BaseApp::LogAdapters()
 	IDXGIAdapter* adapter = nullptr;
 	std::vector<IDXGIAdapter*> adapterList;
 	
-	while (mdxgiFactory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND)
+	while (m_dxgiFactory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND)
 	{
 		DXGI_ADAPTER_DESC adapterDesc;
 		adapter->GetDesc(&adapterDesc);
@@ -104,7 +104,7 @@ void BaseApp::CheckFeatureSupport()
 	featureLevelsInfo.NumFeatureLevels = 2;
 	featureLevelsInfo.pFeatureLevelsRequested = featureLevels;
 
-	ThrowIfFailed(md3dDevice->CheckFeatureSupport(
+	ThrowIfFailed(m_d3dDevice->CheckFeatureSupport(
 		D3D12_FEATURE_FEATURE_LEVELS,
 		&featureLevelsInfo,
 		sizeof(featureLevels)
