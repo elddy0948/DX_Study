@@ -264,3 +264,16 @@ void BaseApp::FlushCommandQueue()
 		CloseHandle(eventHandle);
 	}
 }
+
+D3D12_CPU_DESCRIPTOR_HANDLE BaseApp::CurrentBackBufferView() const
+{
+	return CD3DX12_CPU_DESCRIPTOR_HANDLE(
+		m_rtvHeap->GetCPUDescriptorHandleForHeapStart(),
+		m_currentBackBuffer,
+		m_rtvDescriptorSize);
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE BaseApp::DepthStencilView() const
+{
+	return m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
+}

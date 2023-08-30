@@ -4,6 +4,7 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <vector>
+#include <d3dx12.h>
 
 #include "Helper.h"
 
@@ -24,9 +25,10 @@ protected:
 	void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
 
 	void CheckFeatureSupport();
-
-
 	void FlushCommandQueue();
+
+	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
+	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
 
 private:
 	void CreateDevice();
