@@ -124,6 +124,29 @@ void BaseApp::CreateSwapChain()
 	));
 }
 
+void BaseApp::CreateDescriptorHeaps()
+{
+	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
+	rtvHeapDesc.NumDescriptors = SwapChainBufferCount;
+	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	rtvHeapDesc.NodeMask = 0;
+	ThrowIfFailed(m_device->CreateDescriptorHeap(
+		&rtvHeapDesc,
+		IID_PPV_ARGS(m_rtvHeap.GetAddressOf())
+	));
+
+	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
+	dsvHeapDesc.NumDescriptors = 1;
+	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	dsvHeapDesc.NodeMask = 0;
+	ThrowIfFailed(m_device->CreateDescriptorHeap(
+		&dsvHeapDesc,
+		IID_PPV_ARGS(m_dsvHeap.GetAddressOf())
+	));
+}
+
 void BaseApp::LogAdapters()
 {
 	UINT i = 0;
