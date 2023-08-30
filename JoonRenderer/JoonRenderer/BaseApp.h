@@ -19,7 +19,6 @@ public:
 	~BaseApp();
 
 protected:
-	void CreateDevice();
 	void LogAdapters();
 	void LogAdapterOutputs(IDXGIAdapter* adapter);
 	void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
@@ -29,6 +28,11 @@ protected:
 	void CreateCommandObjects();
 
 	void FlushCommandQueue();
+
+private:
+	void CreateDevice();
+	void CreateFenceAndGetDescriptorSize();
+	void Check4xMSAAQualityLevels();
 
 private:
 	HINSTANCE mhInstance;
@@ -41,4 +45,12 @@ private:
 
 	UINT m_currentFence = 0;
 	Microsoft::WRL::ComPtr<ID3D12Fence> m_fence = nullptr;
+
+	UINT m_rtvDescriptorSize = 0;
+	UINT m_dsvDescriptorSize = 0;
+	UINT m_cbvsrvDescriptorSize = 0;
+
+	DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
+	UINT m_4xMSAAQuality = 0;
+	bool m_4xMSAAState = false;
 };

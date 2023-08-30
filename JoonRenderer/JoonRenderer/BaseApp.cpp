@@ -36,6 +36,37 @@ void BaseApp::CreateDevice()
 	}
 }
 
+void BaseApp::CreateFenceAndGetDescriptorSize()
+{
+	ThrowIfFailed(m_device->CreateFence(
+		0,
+		D3D12_FENCE_FLAG_NONE,
+		IID_PPV_ARGS(&m_fence)
+	));
+
+	m_rtvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	m_dsvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	m_cbvsrvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+}
+
+void BaseApp::Check4xMSAAQualityLevels()
+{
+	D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS multisampleQualityLevels = {};
+	multisampleQualityLevels.Format = m_backBufferFormat;
+	multisampleQualityLevels.SampleCount = 4;
+	multisampleQualityLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
+	multisampleQualityLevels.NumQualityLevels = 0;
+
+	ThrowIfFailed(m_device->CheckFeatureSupport(
+		D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
+		&multisampleQualityLevels,
+		sizeof(multisampleQualityLevels)
+	));
+
+	m_4xMSAAQuality = multisampleQualityLevels.NumQualityLevels;
+	assert(m_4xMSAAQuality > 0 && "Unexpected MSAA quality level.");
+}
+
 void BaseApp::LogAdapters()
 {
 	UINT i = 0;
