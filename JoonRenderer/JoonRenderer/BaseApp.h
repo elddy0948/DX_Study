@@ -37,7 +37,7 @@ public:
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:
-	virtual void CreateRTVAndDSVDescriptorHeaps();
+	virtual void CreateDescriptorHeaps();
 	virtual void OnResize();
 	virtual void Update(const GameTimer& gt) = 0;
 	virtual void Draw(const GameTimer& gt) = 0;
@@ -65,7 +65,6 @@ private:
 	void Check4xMSAAQualityLevels();
 	void CreateCommandObjects();
 	void CreateSwapChain();
-	void CreateDescriptorHeaps();
 	void CreateRenterTargetView();
 	void CreateDepthStencilView();
 	void SetupViewportAndScissorRect();

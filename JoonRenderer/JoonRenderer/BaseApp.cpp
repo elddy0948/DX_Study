@@ -147,7 +147,6 @@ LRESULT BaseApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				else if (m_resizing)
 				{
-
 				}
 				else
 				{
@@ -325,6 +324,49 @@ void BaseApp::CreateDescriptorHeaps()
 	));
 }
 
+void BaseApp::OnResize()
+{
+	assert(m_device);
+	assert(m_swapChain);
+	assert(m_commandAllocator);
+
+	FlushCommandQueue();
+
+	ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
+
+	for (int i = 0; i < SwapChainBufferCount; ++i)
+		m_swapChainBuffer[i].Reset();
+	m_depthStencilBuffer.Reset();
+
+	ThrowIfFailed(m_swapChain->ResizeBuffers(
+		SwapChainBufferCount,
+		m_clientWidth,
+		m_clientHeight,
+		m_backBufferFormat,
+		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
+	));
+
+	m_currentBackBuffer = 0;
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart());
+	for (UINT i = 0; i < SwapChainBufferCount; ++i)
+	{
+		ThrowIfFailed(m_swapChain->GetBuffer(i, IID_PPV_ARGS(&m_swapChainBuffer[i])));
+		m_device->CreateRenderTargetView(m_swapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
+		rtvHeapHandle.Offset(1, m_rtvDescriptorSize);
+	}
+
+	CreateDepthStencilView();
+
+	ThrowIfFailed(m_commandList->Close());
+	ID3D12CommandList* commandLists[] = { m_commandList.Get() };
+	m_commandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
+
+	FlushCommandQueue();
+
+	SetupViewportAndScissorRect();
+}
+
 void BaseApp::CreateRenterTargetView()
 {
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(
@@ -387,7 +429,6 @@ void BaseApp::CreateDepthStencilView()
 			m_depthStencilBuffer.Get(),
 			D3D12_RESOURCE_STATE_COMMON,
 			D3D12_RESOURCE_STATE_DEPTH_WRITE));
-	ThrowIfFailed(m_commandList->Close());
 }
 
 void BaseApp::SetupViewportAndScissorRect()
@@ -399,10 +440,61 @@ void BaseApp::SetupViewportAndScissorRect()
 	m_viewport.MinDepth = 0.0f;
 	m_viewport.MaxDepth = 1.0f;
 
-	m_commandList->RSSetViewports(1, &m_viewport);
+	//m_commandList->RSSetViewports(1, &m_viewport);
 
 	m_scissorRect = { 0, 0, m_clientWidth / 2, m_clientHeight / 2 };
-	m_commandList->RSSetScissorRects(1, &m_scissorRect);
+	//m_commandList->RSSetScissorRects(1, &m_scissorRect);
+}
+
+bool BaseApp::InitMainWindow()
+{
+	WNDCLASS wc;
+	wc.style = CS_HREDRAW | CS_VREDRAW;
+	wc.lpfnWndProc = MainWndProc;
+	wc.cbClsExtra = 0;
+	wc.cbWndExtra = 0;
+	wc.hInstance = m_hInstance;
+	wc.hIcon = LoadIcon(0, IDI_APPLICATION);
+	wc.hCursor = LoadCursor(0, IDC_ARROW);
+	wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
+	wc.lpszMenuName = 0;
+	wc.lpszClassName = L"MainWnd";
+
+	if (!RegisterClass(&wc))
+	{
+		MessageBox(0, L"Register Class is Failed!", 0, 0);
+		return false;
+	}
+
+	RECT rect = { 0, 0, m_clientWidth, m_clientHeight };
+	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
+
+	int width = rect.right - rect.left;
+	int height = rect.bottom - rect.top;
+	
+	m_hwnd = CreateWindow(
+		L"MainWnd",
+		m_mainWndCaption.c_str(),
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		width,
+		height,
+		0,
+		0,
+		m_hInstance,
+		0);
+
+	if (!m_hwnd)
+	{
+		MessageBox(0, L"Create Window Failed!", 0, 0);
+		return false;
+	}
+
+	ShowWindow(m_hwnd, SW_SHOW);
+	UpdateWindow(m_hwnd);
+
+	return true;
 }
 
 void BaseApp::LoadPipeline()
@@ -410,12 +502,14 @@ void BaseApp::LoadPipeline()
 	CreateDevice();
 	CreateFenceAndGetDescriptorSize();
 	Check4xMSAAQualityLevels();
+
+#ifdef _DEBUG
+	LogAdapters();
+#endif
+
 	CreateCommandObjects();
 	CreateSwapChain();
 	CreateDescriptorHeaps();
-	CreateRenterTargetView();
-	CreateDepthStencilView();
-	SetupViewportAndScissorRect();
 }
 
 void BaseApp::LogAdapters()
