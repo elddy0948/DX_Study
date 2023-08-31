@@ -137,6 +137,7 @@
     <ClInclude Include="DxException.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="Helper.h" />
+    <ClInclude Include="InitApp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

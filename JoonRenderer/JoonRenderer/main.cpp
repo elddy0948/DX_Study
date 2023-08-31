@@ -2,6 +2,7 @@
 #include <crtdbg.h>
 
 #include "Helper.h"
+#include "InitApp.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int showCmd)
 {
@@ -11,7 +12,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
 	try
 	{
-		return 0;
+		InitApp app(hInstance);
+		if (!app.Initialize())
+			return 0;
+		return app.Run();
 	}
 	catch (DxException& e)
 	{

@@ -630,6 +630,11 @@ void BaseApp::FlushCommandQueue()
 	}
 }
 
+ID3D12Resource* BaseApp::CurrentBackBuffer() const
+{
+	return m_swapChainBuffer[m_currentBackBuffer].Get();
+}
+
 D3D12_CPU_DESCRIPTOR_HANDLE BaseApp::CurrentBackBufferView() const
 {
 	return CD3DX12_CPU_DESCRIPTOR_HANDLE(
