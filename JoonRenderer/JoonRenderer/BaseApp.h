@@ -7,7 +7,7 @@
 #include <d3dx12.h>
 
 #include "Helper.h"
-#include "GameTimer.h"
+#include "Win32Application.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -25,26 +25,26 @@ public:
 	static BaseApp* GetApp();
 
 	HINSTANCE AppInstance() const;
-	HWND MainWnd() const;
 	float AspectRatio() const;
 
 	bool Get4xMSAAState() const;
 	void Set4xMSAAState(bool state);
 
-	int Run();
+	int GetWidth() const { return m_clientWidth; }
+	int GetHeight() const { return m_clientHeight; }
+	std::wstring GetTitle() const { return m_mainWndCaption; }
+	bool IsPaused() const { return m_appPaused; }
 
 	virtual bool Initialize();
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	virtual void Update() = 0;
+	virtual void Draw() = 0;
 
 protected:
 	virtual void CreateDescriptorHeaps();
 	virtual void OnResize();
-	virtual void Update(const GameTimer& gt) = 0;
-	virtual void Draw(const GameTimer& gt) = 0;
 
 protected:
-	bool InitMainWindow();
-
 	void LoadPipeline();
 
 	void LogAdapters();
@@ -58,7 +58,6 @@ protected:
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
 
-	void CalculateFrameStats();
 
 private:
 	void CreateDevice();
@@ -75,7 +74,6 @@ protected:
 	static const int SwapChainBufferCount = 2;
 
 	HINSTANCE m_hInstance = nullptr;
-	HWND m_hwnd = nullptr;
 
 	UINT64 m_currentFence = 0;
 	UINT m_rtvDescriptorSize = 0;
@@ -89,8 +87,6 @@ protected:
 
 	D3D12_VIEWPORT m_viewport = {};
 	RECT m_scissorRect = {};
-
-	GameTimer m_timer;
 
 	bool m_4xMSAAState = false;
 	bool m_appPaused = false;

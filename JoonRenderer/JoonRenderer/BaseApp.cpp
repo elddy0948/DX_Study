@@ -1,10 +1,5 @@
 #include "BaseApp.h"
 
-LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	return BaseApp::GetApp()->MsgProc(hwnd, msg, wParam, lParam);
-}
-
 BaseApp* BaseApp::m_app = nullptr;
 
 BaseApp::BaseApp(HINSTANCE hInstance) : m_hInstance(hInstance)
@@ -31,11 +26,6 @@ HINSTANCE BaseApp::AppInstance() const
 	return m_hInstance;
 }
 
-HWND BaseApp::MainWnd() const
-{
-	return m_hwnd;
-}
-
 float BaseApp::AspectRatio() const
 {
 	return static_cast<float>(m_clientWidth) / static_cast<float>(m_clientHeight);
@@ -56,40 +46,8 @@ void BaseApp::Set4xMSAAState(bool state)
 	}
 }
 
-int BaseApp::Run()
-{
-	MSG msg = { 0 };
-	m_timer.Reset();
-
-	while (msg.message != WM_QUIT)
-	{
-		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		else
-		{
-			m_timer.Tick();
-			if (!m_appPaused)
-			{
-				CalculateFrameStats();
-				Update(m_timer);
-				Draw(m_timer);
-			}
-			else
-			{
-				Sleep(100);
-			}
-		}
-	}
-	return (int)msg.wParam;
-}
-
 bool BaseApp::Initialize()
 {
-	if (!InitMainWindow())
-		return false;
 	LoadPipeline();
 	OnResize();
 
@@ -104,12 +62,12 @@ LRESULT BaseApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if (LOWORD(wParam) == WA_INACTIVE)
 		{
 			m_appPaused = true;
-			m_timer.Stop();
+			Win32Application::GetTimer().Stop();
 		}
 		else
 		{
 			m_appPaused = false;
-			m_timer.Start();
+			Win32Application::GetTimer().Start();
 		}
 		return 0;
 
@@ -159,13 +117,13 @@ LRESULT BaseApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_ENTERSIZEMOVE:
 		m_appPaused = true;
 		m_resizing = true;
-		m_timer.Stop();
+		Win32Application::GetTimer().Stop();
 		return 0;
 		
 	case WM_EXITSIZEMOVE:
 		m_appPaused = false;
 		m_resizing = false;
-		m_timer.Start();
+		Win32Application::GetTimer().Start();
 		OnResize();
 		return 0;
 
@@ -289,7 +247,7 @@ void BaseApp::CreateSwapChain()
 
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.BufferCount = SwapChainBufferCount;
-	swapChainDesc.OutputWindow = m_hwnd;
+	swapChainDesc.OutputWindow = Win32Application::GetHwnd();
 	swapChainDesc.Windowed = true;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
@@ -446,57 +404,6 @@ void BaseApp::SetupViewportAndScissorRect()
 	//m_commandList->RSSetScissorRects(1, &m_scissorRect);
 }
 
-bool BaseApp::InitMainWindow()
-{
-	WNDCLASS wc;
-	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc = MainWndProc;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = m_hInstance;
-	wc.hIcon = LoadIcon(0, IDI_APPLICATION);
-	wc.hCursor = LoadCursor(0, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
-	wc.lpszMenuName = 0;
-	wc.lpszClassName = L"MainWnd";
-
-	if (!RegisterClass(&wc))
-	{
-		MessageBox(0, L"Register Class is Failed!", 0, 0);
-		return false;
-	}
-
-	RECT rect = { 0, 0, m_clientWidth, m_clientHeight };
-	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
-
-	int width = rect.right - rect.left;
-	int height = rect.bottom - rect.top;
-	
-	m_hwnd = CreateWindow(
-		L"MainWnd",
-		m_mainWndCaption.c_str(),
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		width,
-		height,
-		0,
-		0,
-		m_hInstance,
-		0);
-
-	if (!m_hwnd)
-	{
-		MessageBox(0, L"Create Window Failed!", 0, 0);
-		return false;
-	}
-
-	ShowWindow(m_hwnd, SW_SHOW);
-	UpdateWindow(m_hwnd);
-
-	return true;
-}
-
 void BaseApp::LoadPipeline()
 {
 	CreateDevice();
@@ -646,30 +553,4 @@ D3D12_CPU_DESCRIPTOR_HANDLE BaseApp::CurrentBackBufferView() const
 D3D12_CPU_DESCRIPTOR_HANDLE BaseApp::DepthStencilView() const
 {
 	return m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
-}
-
-void BaseApp::CalculateFrameStats()
-{
-	static int frameCount = 0;
-	static float timeElapsed = 0.0f;
-
-	frameCount++;
-
-	if (m_timer.GameTime() - timeElapsed >= 1.0f)
-	{
-		float fps = (float)frameCount;
-		float mspf = 1000.0f / fps;
-
-		std::wstring fpsText = std::to_wstring(fps);
-		std::wstring mspfText = std::to_wstring(mspf);
-
-		std::wstring windowText = m_mainWndCaption +
-			L"fps: " + fpsText +
-			L"mspf: " + mspfText;
-
-		SetWindowText(m_hwnd, windowText.c_str());
-
-		frameCount = 0;
-		timeElapsed += 1.0f;
-	}
 }

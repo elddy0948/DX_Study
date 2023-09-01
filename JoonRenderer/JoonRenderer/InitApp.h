@@ -14,8 +14,8 @@ public:
 
 private:
 	virtual void OnResize() override;
-	virtual void Update(const GameTimer& gt) override;
-	virtual void Draw(const GameTimer& gt) override;
+	virtual void Update() override;
+	virtual void Draw() override;
 };
 
 InitApp::InitApp(HINSTANCE hInstance) : BaseApp(hInstance)
@@ -38,12 +38,12 @@ void InitApp::OnResize()
 	BaseApp::OnResize();
 }
 
-void InitApp::Update(const GameTimer& gt)
+void InitApp::Update()
 {
 
 }
 
-void InitApp::Draw(const GameTimer& gt)
+void InitApp::Draw()
 {
 	ThrowIfFailed(m_commandAllocator->Reset());
 	ThrowIfFailed(m_commandList->Reset(
