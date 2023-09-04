@@ -1,6 +1,7 @@
 #include "DrawApp.h"
 
 #include <DirectXMath.h>
+#include <DirectXColors.h>
 
 using namespace DirectX;
 
@@ -47,6 +48,42 @@ void DrawApp::SetInputLayout()
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
 		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
 	};
+}
+
+void DrawApp::ConfigureVertexBuffer()
+{
+	Vertex vertices[] =
+	{
+		{XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::White)},
+		{XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT4(Colors::Black)},
+		{XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT4(Colors::Red)},
+		{XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::Green)},
+		{XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT4(Colors::Blue)},
+		{XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT4(Colors::Yellow)},
+		{XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT4(Colors::Cyan)},
+		{XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT4(Colors::Magenta)},
+	};
+
+	UINT64 vertexBufferByteSize = 8 * sizeof(Vertex);
+
+	vertexBufferGPU = CreateDefaultBuffer(
+		m_device.Get(),
+		m_commandList.Get(),
+		vertices,
+		vertexBufferByteSize,
+		vertexBufferUploader);
+
+	// Vertex buffer view
+	D3D12_VERTEX_BUFFER_VIEW vbv;
+	vbv.BufferLocation = vertexBufferGPU->GetGPUVirtualAddress();
+	vbv.StrideInBytes = sizeof(Vertex);
+	vbv.SizeInBytes = 8 * sizeof(Vertex);
+
+	D3D12_VERTEX_BUFFER_VIEW vertexBuffers[1] = { vbv };
+
+	m_commandList->IASetVertexBuffers(0, 1, vertexBuffers);
+
+	m_commandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 Microsoft::WRL::ComPtr<ID3D12Resource> DrawApp::CreateDefaultBuffer(
