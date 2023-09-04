@@ -128,6 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BaseApp.cpp" />
+    <ClCompile Include="DrawApp.cpp" />
     <ClCompile Include="DxException.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="main.cpp" />
@@ -135,6 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseApp.h" />
+    <ClInclude Include="DrawApp.h" />
     <ClInclude Include="DxException.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="Helper.h" />

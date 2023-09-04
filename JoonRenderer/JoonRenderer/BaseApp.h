@@ -58,7 +58,6 @@ protected:
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
 
-
 private:
 	void CreateDevice();
 	void CreateFenceAndGetDescriptorSize();
