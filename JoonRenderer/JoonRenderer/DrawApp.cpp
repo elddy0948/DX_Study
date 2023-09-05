@@ -404,3 +404,27 @@ void DrawApp::BuildPSO()
 		&psoDesc,
 		IID_PPV_ARGS(&m_pso)));
 }
+
+void DrawApp::OnLeftKeyDown()
+{
+	float dx = XMConvertToRadians(1.0f);
+	m_theta += dx;
+}
+
+void DrawApp::OnRightKeyDown()
+{
+	float dx = XMConvertToRadians(1.0f);
+	m_theta -= dx;
+}
+
+void DrawApp::OnUpKeyDown()
+{
+	float dy = XMConvertToRadians(1.0f);
+	m_phi += dy;
+}
+
+void DrawApp::OnDownKeyDown()
+{
+	float dy = XMConvertToRadians(1.0f);
+	m_phi -= dy;
+}

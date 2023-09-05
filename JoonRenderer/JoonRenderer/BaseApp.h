@@ -44,6 +44,11 @@ protected:
 	virtual void CreateDescriptorHeaps();
 	virtual void OnResize();
 
+	virtual void OnLeftKeyDown() {}
+	virtual void OnRightKeyDown() {}
+	virtual void OnUpKeyDown() {}
+	virtual void OnDownKeyDown() {}
+
 protected:
 	void LoadPipeline();
 

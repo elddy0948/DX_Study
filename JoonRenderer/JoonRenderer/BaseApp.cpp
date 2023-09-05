@@ -138,9 +138,26 @@ LRESULT BaseApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if (wParam == VK_ESCAPE)
 		{
 			PostQuitMessage(0);
-			return 0;
 		}
-
+		return 0;
+	case WM_KEYDOWN:
+		if (wParam == VK_UP)
+		{
+			OnUpKeyDown();
+		}
+		else if (wParam == VK_LEFT)
+		{
+			OnLeftKeyDown();
+		}
+		else if (wParam == VK_RIGHT)
+		{
+			OnRightKeyDown();
+		}
+		else if (wParam == VK_DOWN)
+		{
+			OnDownKeyDown();
+		}
+		return 0;
 	case WM_GETMINMAXINFO:
 		((MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
 		((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
