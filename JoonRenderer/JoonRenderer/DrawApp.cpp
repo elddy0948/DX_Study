@@ -38,7 +38,7 @@ void DrawApp::OnResize()
 {
 	BaseApp::OnResize();
 	
-	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25 * 3.141592, AspectRatio(), 1.0f, 1000.0f);
+	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * 3.141592f, AspectRatio(), 1.0f, 1000.0f);
 	XMStoreFloat4x4(&m_proj, P);
 }
 
