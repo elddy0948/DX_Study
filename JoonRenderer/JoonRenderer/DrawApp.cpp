@@ -2,12 +2,6 @@
 
 using namespace DirectX;
 
-struct Vertex
-{
-	XMFLOAT3 Pos;
-	XMFLOAT4 Color;
-};
-
 DrawApp::DrawApp(HINSTANCE hInstance) : BaseApp(hInstance)
 {
 }
@@ -241,7 +235,7 @@ void DrawApp::BuildRootSignature()
 {
 	using namespace Microsoft::WRL;
 
-	CD3DX12_ROOT_PARAMETER slotRootParameter[1];
+	CD3DX12_ROOT_PARAMETER slotRootParameter[1] = {};
 
 	CD3DX12_DESCRIPTOR_RANGE cbvTable;
 	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);

@@ -22,6 +22,12 @@ struct ObjectConstants
 	DirectX::XMFLOAT4X4 WorldViewProj = Identity4x4;
 };
 
+struct Vertex
+{
+	XMFLOAT3 Pos;
+	XMFLOAT4 Color;
+};
+
 class DrawApp : public BaseApp
 {
 public:
@@ -54,8 +60,6 @@ private:
 		Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer);
 
 private:
-	const int NumElements = 1;
-	
 	float m_theta = 1.5f * DirectX::XM_PI;
 	float m_phi = DirectX::XM_PIDIV4;
 	float m_radius = 5.0f;
@@ -65,11 +69,6 @@ private:
 
 	std::vector<D3D12_INPUT_ELEMENT_DESC> m_inputLayout;
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexBufferGPU = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexBufferUploader = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexBufferGPU = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexBufferUploader = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> m_uploadConstantBuffer = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_constantBufferHeap = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature = nullptr;
 	
