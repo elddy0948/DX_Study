@@ -130,6 +130,7 @@
     <ClCompile Include="BaseApp.cpp" />
     <ClCompile Include="DrawApp.cpp" />
     <ClCompile Include="DxException.cpp" />
+    <ClCompile Include="Helper.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Win32Application.cpp" />
@@ -141,7 +142,12 @@
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="InitApp.h" />
+    <ClInclude Include="UploadBuffer.h" />
     <ClInclude Include="Win32Application.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="MyPS.hlsl" />
+    <FxCompile Include="MyVS.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

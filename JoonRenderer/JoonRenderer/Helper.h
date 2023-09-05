@@ -5,6 +5,12 @@
 
 #include "DxException.h"
 
+class Helper
+{
+public:
+	static UINT CalculateConstantBufferByteSize(UINT byteSize);
+};
+
 inline std::wstring AnsiToWString(const std::string& str)
 {
 	WCHAR buffer[512];

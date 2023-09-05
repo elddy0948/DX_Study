@@ -1,8 +1,5 @@
 #include "DrawApp.h"
 
-#include <DirectXMath.h>
-#include <DirectXColors.h>
-
 using namespace DirectX;
 
 struct Vertex
@@ -142,4 +139,58 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DrawApp::CreateDefaultBuffer(
 			D3D12_RESOURCE_STATE_GENERIC_READ));
 
 	return defaultBuffer;
+}
+
+void DrawApp::ConfigureIndexBuffer()
+{
+	std::uint16_t indices[] =
+	{
+		// front
+		0, 1, 2,
+		0, 2, 3,
+		// back
+		4, 6, 5,
+		4, 7, 6,
+		// left
+		4, 5, 1,
+		4, 1, 0,
+		// right
+		3, 2, 6,
+		3, 6, 7,
+		// upper
+		1, 5, 6,
+		1, 6, 2,
+		// below
+		4, 0, 3,
+		4, 3, 7,
+	};
+
+	UINT indexBufferByteSize = 36 * sizeof(std::uint16_t);
+
+	indexBufferGPU = CreateDefaultBuffer(
+		m_device.Get(),
+		m_commandList.Get(),
+		indices,
+		indexBufferByteSize,
+		indexBufferUploader);
+
+	D3D12_INDEX_BUFFER_VIEW ibv;
+	ibv.BufferLocation = indexBufferGPU->GetGPUVirtualAddress();
+	ibv.Format = DXGI_FORMAT_R16_UINT;
+	ibv.SizeInBytes = indexBufferByteSize;
+
+	m_commandList->IASetIndexBuffer(&ibv);
+}
+
+void DrawApp::ConfigureConstantBuffer()
+{
+	UINT elementByteSize = Helper::CalculateConstantBufferByteSize(sizeof(ObjectConstants));
+
+	m_device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(elementByteSize * NumElements),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&m_uploadConstantBuffer));
 }
