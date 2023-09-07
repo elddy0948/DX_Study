@@ -22,7 +22,8 @@ bool DrawApp::Initialize()
 	BuildRootSignature();
 	BuildShaders();
 	SetInputLayout();
-	BuildBox();
+	//BuildBox();
+	BuildPyramid();
 	BuildPSO();
 
 	ThrowIfFailed(m_commandList->Close());
@@ -104,7 +105,7 @@ void DrawApp::Draw()
 
 	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] =
+	/*D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] =
 	{
 		m_boxGeometry->VertexPositionBufferView(),
 		m_boxGeometry->VertexColorBufferView()
@@ -120,6 +121,23 @@ void DrawApp::Draw()
 
 	m_commandList->DrawIndexedInstanced(
 		m_boxGeometry->drawArgs["box"].IndexCount,
+		1, 0, 0, 0);*/
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] =
+	{
+		m_pyramidGeometry->VertexPositionBufferView(),
+		m_pyramidGeometry->VertexColorBufferView()
+	};
+
+	m_commandList->IASetVertexBuffers(0, 2, vertexBufferViews);
+	m_commandList->IASetIndexBuffer(&m_pyramidGeometry->IndexBufferView());
+	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	m_commandList->SetGraphicsRootDescriptorTable(
+		0,
+		m_constantBufferHeap->GetGPUDescriptorHandleForHeapStart());
+
+	m_commandList->DrawIndexedInstanced(
+		m_pyramidGeometry->drawArgs["pyramid"].IndexCount,
 		1, 0, 0, 0);
 
 	m_commandList->ResourceBarrier(
@@ -400,6 +418,121 @@ void DrawApp::BuildBox()
 	submesh.BaseVertexLocation = 0;
 
 	m_boxGeometry->drawArgs["box"] = submesh;
+}
+
+void DrawApp::BuildPyramid()
+{
+	//Vertices
+	std::array<VPosData, 5> vPosArray =
+	{
+		VPosData({XMFLOAT3{0.0f, 0.0f, -1.0f}}),
+		VPosData({XMFLOAT3{-1.0f, 0.0f, 0.0f}}),
+		VPosData({XMFLOAT3{1.0f, 0.0f, 0.0f}}),
+		VPosData({XMFLOAT3{0.0f, 0.0f, 1.0f}}),
+		VPosData({XMFLOAT3{0.0f, 1.0f, 0.0f}}),
+	};
+
+	std::array<VColorData, 5> vColorArray =
+	{
+		VColorData({XMFLOAT4{Colors::Green}}),
+		VColorData({XMFLOAT4{Colors::Green}}),
+		VColorData({XMFLOAT4{Colors::Green}}),
+		VColorData({XMFLOAT4{Colors::Green}}),
+		VColorData({XMFLOAT4{Colors::Red}}),
+	};
+
+	//Indices
+	std::array<std::uint16_t, 18> indices =
+	{
+		0, 2, 1,
+		1, 2, 3,
+		0, 1, 4,
+		0, 4, 2,
+		2, 4, 3,
+		3, 4, 1
+	};
+
+	const UINT vPosBufferByteSize = (UINT)vPosArray.size() * sizeof(VPosData);
+	const UINT vColorBufferByteSize = (UINT)vColorArray.size() * sizeof(VColorData);
+	const UINT indicesBufferByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+
+	m_pyramidGeometry = std::make_unique<MeshGeometry>();
+	m_pyramidGeometry->Name = "Pyramid Geo";
+
+	ThrowIfFailed(D3DCreateBlob(
+		vPosBufferByteSize,
+		&m_pyramidGeometry->vPosBufferCPU
+	));
+
+	ThrowIfFailed(D3DCreateBlob(
+		vColorBufferByteSize,
+		&m_pyramidGeometry->vColorBufferCPU
+	));
+
+	ThrowIfFailed(D3DCreateBlob(
+		indicesBufferByteSize,
+		&m_pyramidGeometry->indexBufferCPU
+	));
+
+	CopyMemory(
+		m_pyramidGeometry->vPosBufferCPU->GetBufferPointer(),
+		vPosArray.data(),
+		vPosBufferByteSize
+	);
+
+	CopyMemory(
+		m_pyramidGeometry->vColorBufferCPU->GetBufferPointer(),
+		vColorArray.data(),
+		vColorBufferByteSize
+	);
+
+	CopyMemory(
+		m_pyramidGeometry->indexBufferCPU->GetBufferPointer(),
+		indices.data(),
+		indicesBufferByteSize
+	);
+
+	// Create GPU Buffer
+	m_pyramidGeometry->vPosBufferGPU = CreateDefaultBuffer(
+		m_device.Get(),
+		m_commandList.Get(),
+		vPosArray.data(),
+		vPosBufferByteSize,
+		m_pyramidGeometry->vPosBufferUploader
+	);
+
+	m_pyramidGeometry->vColorBufferGPU = CreateDefaultBuffer(
+		m_device.Get(),
+		m_commandList.Get(),
+		vColorArray.data(),
+		vColorBufferByteSize,
+		m_pyramidGeometry->vColorBufferUploader
+	);
+
+	m_pyramidGeometry->indexBufferGPU = CreateDefaultBuffer(
+		m_device.Get(),
+		m_commandList.Get(),
+		indices.data(),
+		indicesBufferByteSize,
+		m_pyramidGeometry->indexBufferUploader
+	);
+
+	m_pyramidGeometry->vPosByteStride = sizeof(VPosData);
+	m_pyramidGeometry->vColorByteStride = sizeof(VColorData);
+
+	m_pyramidGeometry->vPosBufferByteSize = vPosBufferByteSize;
+	m_pyramidGeometry->vColorBufferByteSize = vColorBufferByteSize;
+	m_pyramidGeometry->indexBufferByteSize = indicesBufferByteSize;
+
+	m_pyramidGeometry->indexFormat = DXGI_FORMAT_R16_UINT;
+
+	SubmeshGeometry submesh;
+
+	submesh.IndexCount = (UINT)indices.size();
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
+
+	m_pyramidGeometry->drawArgs["pyramid"] = submesh;
 }
 
 void DrawApp::BuildPSO()

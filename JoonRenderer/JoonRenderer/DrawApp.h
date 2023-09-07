@@ -62,6 +62,7 @@ private:
 	void SetInputLayout();
 
 	void BuildBox();
+	void BuildPyramid();
 	void BuildPSO();
 
 	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBuffer(
@@ -78,6 +79,7 @@ private:
 
 	std::unique_ptr<UploadBuffer<ObjectConstants>> m_objectConstantBuffer = nullptr;
 	std::unique_ptr<MeshGeometry> m_boxGeometry = nullptr;
+	std::unique_ptr<MeshGeometry> m_pyramidGeometry = nullptr;
 
 	std::vector<D3D12_INPUT_ELEMENT_DESC> m_inputLayout;
 
