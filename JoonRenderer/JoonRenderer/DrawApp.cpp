@@ -369,14 +369,14 @@ void DrawApp::BuildBox()
 		m_commandList.Get(),
 		vposArray.data(),
 		vPosBufferByteSize,
-		m_boxGeometry->vertexBufferUploader);
+		m_boxGeometry->vPosBufferUploader);
 
 	m_boxGeometry->vColorBufferGPU = CreateDefaultBuffer(
 		m_device.Get(),
 		m_commandList.Get(),
 		vcolorArray.data(),
 		vColorBufferByteSize,
-		m_boxGeometry->vertexBufferUploader);
+		m_boxGeometry->vColorBufferUploader);
 
 	m_boxGeometry->indexBufferGPU = CreateDefaultBuffer(
 		m_device.Get(),

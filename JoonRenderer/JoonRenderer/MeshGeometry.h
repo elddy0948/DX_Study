@@ -14,13 +14,13 @@ struct MeshGeometry
 {
 	std::string Name;
 
-	ComPtr<ID3D12Resource> vertexBufferUploader = nullptr;
-
 	ComPtr<ID3DBlob> vPosBufferCPU = nullptr;
 	ComPtr<ID3D12Resource> vPosBufferGPU = nullptr;
+	ComPtr<ID3D12Resource> vPosBufferUploader = nullptr;
 
 	ComPtr<ID3DBlob> vColorBufferCPU = nullptr;
 	ComPtr<ID3D12Resource> vColorBufferGPU = nullptr;
+	ComPtr<ID3D12Resource> vColorBufferUploader = nullptr;
 
 	ComPtr<ID3DBlob> indexBufferCPU = nullptr;	
 	ComPtr<ID3D12Resource> indexBufferGPU = nullptr;
@@ -67,5 +67,7 @@ struct MeshGeometry
 	{
 		vertexBufferUploader = nullptr;
 		indexBufferUploader = nullptr;
+		vPosBufferUploader = nullptr;
+		vColorBufferUploader = nullptr;
 	}
 };
