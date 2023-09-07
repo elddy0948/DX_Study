@@ -58,10 +58,12 @@ void DrawApp::Update()
 	XMMATRIX world = XMLoadFloat4x4(&m_world);
 	XMMATRIX proj = XMLoadFloat4x4(&m_proj);
 	XMMATRIX worldViewProj = world * view * proj;
+	float gameTime = Win32Application::GetTimer().GameTime();
 
 	ObjectConstants objectConstants;
 	XMStoreFloat4x4(&objectConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
-	
+	objectConstants.gTime = gameTime;
+	//XMStoreFloat(&objectConstants.gTime, XMLoadFloat(&gameTime));
 	m_objectConstantBuffer->CopyData(0, objectConstants);
 }
 
@@ -214,7 +216,7 @@ void DrawApp::BuildConstantBufferDescriptorHeap()
 
 void DrawApp::BuildConstantBuffer()
 {
-	UINT n = 1;
+	UINT n = 2;
 	int i = 0;
 
 	m_objectConstantBuffer = std::make_unique<UploadBuffer<ObjectConstants>>(

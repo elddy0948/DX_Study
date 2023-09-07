@@ -22,6 +22,7 @@ static const XMFLOAT4X4 Identity4x4 =
 struct ObjectConstants
 {
 	XMFLOAT4X4 WorldViewProj = Identity4x4;
+	float gTime = 0.0f;
 };
 
 struct VPosData

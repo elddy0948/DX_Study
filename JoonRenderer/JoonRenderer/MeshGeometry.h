@@ -13,7 +13,7 @@ using namespace Microsoft::WRL;
 struct MeshGeometry
 {
 	std::string Name;
-
+ 
 	ComPtr<ID3DBlob> vPosBufferCPU = nullptr;
 	ComPtr<ID3D12Resource> vPosBufferGPU = nullptr;
 	ComPtr<ID3D12Resource> vPosBufferUploader = nullptr;
@@ -65,7 +65,6 @@ struct MeshGeometry
 
 	void DisposeUploaders()
 	{
-		vertexBufferUploader = nullptr;
 		indexBufferUploader = nullptr;
 		vPosBufferUploader = nullptr;
 		vColorBufferUploader = nullptr;
