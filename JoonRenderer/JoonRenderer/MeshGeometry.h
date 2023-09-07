@@ -12,31 +12,45 @@ using namespace Microsoft::WRL;
 
 struct MeshGeometry
 {
-
 	std::string Name;
 
-	ComPtr<ID3DBlob> vertexBufferCPU = nullptr;
-	ComPtr<ID3D12Resource> vertexBufferGPU = nullptr;
 	ComPtr<ID3D12Resource> vertexBufferUploader = nullptr;
+
+	ComPtr<ID3DBlob> vPosBufferCPU = nullptr;
+	ComPtr<ID3D12Resource> vPosBufferGPU = nullptr;
+
+	ComPtr<ID3DBlob> vColorBufferCPU = nullptr;
+	ComPtr<ID3D12Resource> vColorBufferGPU = nullptr;
 
 	ComPtr<ID3DBlob> indexBufferCPU = nullptr;	
 	ComPtr<ID3D12Resource> indexBufferGPU = nullptr;
 	ComPtr<ID3D12Resource> indexBufferUploader = nullptr;
 
-	UINT vertexByteStride = 0;
-	UINT vertexBufferByteSize = 0;
+	UINT vPosByteStride = 0;
+	UINT vPosBufferByteSize = 0;
+	UINT vColorByteStride = 0;
+	UINT vColorBufferByteSize = 0;
 
 	DXGI_FORMAT indexFormat = DXGI_FORMAT_R16_UINT;
 	UINT indexBufferByteSize = 0;
 
 	std::unordered_map<std::string, SubmeshGeometry> drawArgs;
 
-	D3D12_VERTEX_BUFFER_VIEW VertexBufferView() const
+	D3D12_VERTEX_BUFFER_VIEW VertexPositionBufferView() const
 	{
 		D3D12_VERTEX_BUFFER_VIEW vbv;
-		vbv.BufferLocation = vertexBufferGPU->GetGPUVirtualAddress();
-		vbv.StrideInBytes = vertexByteStride;
-		vbv.SizeInBytes = vertexBufferByteSize;
+		vbv.BufferLocation = vPosBufferGPU->GetGPUVirtualAddress();
+		vbv.StrideInBytes = vPosByteStride;
+		vbv.SizeInBytes = vPosBufferByteSize;
+		return vbv;
+	}
+
+	D3D12_VERTEX_BUFFER_VIEW VertexColorBufferView() const
+	{
+		D3D12_VERTEX_BUFFER_VIEW vbv;
+		vbv.BufferLocation = vColorBufferGPU->GetGPUVirtualAddress();
+		vbv.StrideInBytes = vColorByteStride;
+		vbv.SizeInBytes = vColorBufferByteSize;
 		return vbv;
 	}
 

@@ -102,7 +102,13 @@ void DrawApp::Draw()
 
 	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 
-	m_commandList->IASetVertexBuffers(0, 1, &m_boxGeometry->VertexBufferView());
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] =
+	{
+		m_boxGeometry->VertexPositionBufferView(),
+		m_boxGeometry->VertexColorBufferView()
+	};
+
+	m_commandList->IASetVertexBuffers(0, 2, vertexBufferViews);
 	m_commandList->IASetIndexBuffer(&m_boxGeometry->IndexBufferView());
 	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -280,22 +286,26 @@ void DrawApp::SetInputLayout()
 	m_inputLayout =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
 	};
 }
 
 void DrawApp::BuildBox()
 {
-	std::array<Vertex, 8> verticesArray =
+	std::array<VPosData, 8> vposArray =
 	{
-		Vertex({XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::White)}),
-		Vertex({XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT4(Colors::Black)}),
-		Vertex({XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT4(Colors::Red)}),
-		Vertex({XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::Green)}),
-		Vertex({XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT4(Colors::Blue)}),
-		Vertex({XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT4(Colors::Yellow)}),
-		Vertex({XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT4(Colors::Cyan)}),
-		Vertex({XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT4(Colors::Magenta)}),
+		VPosData({XMFLOAT3(-1.0f, -1.0f, -1.0f)}), VPosData({XMFLOAT3(-1.0f, 1.0f, -1.0f)}),
+		VPosData({XMFLOAT3(1.0f, 1.0f, -1.0f)}), VPosData({XMFLOAT3(1.0f, -1.0f, -1.0f)}),
+		VPosData({XMFLOAT3(-1.0f, -1.0f, 1.0f)}), VPosData({XMFLOAT3(-1.0f, 1.0f, 1.0f)}),
+		VPosData({XMFLOAT3(1.0f, 1.0f, 1.0f)}), VPosData({XMFLOAT3(1.0f, -1.0f, 1.0f)}),
+	};
+
+	std::array<VColorData, 8> vcolorArray =
+	{
+		VColorData({XMFLOAT4(Colors::White)}), VColorData({XMFLOAT4(Colors::Black)}),
+		VColorData({XMFLOAT4(Colors::Red)}), VColorData({XMFLOAT4(Colors::Green)}),
+		VColorData({XMFLOAT4(Colors::Blue)}), VColorData({XMFLOAT4(Colors::Yellow)}),
+		VColorData({XMFLOAT4(Colors::Cyan)}), VColorData({XMFLOAT4(Colors::Magenta)}),
 	};
 
 	std::array<std::uint16_t, 36> indicesArray =
@@ -320,20 +330,30 @@ void DrawApp::BuildBox()
 		4, 3, 7,
 	};
 
-	const UINT vertexBufferByteSize = (UINT)verticesArray.size() * sizeof(Vertex);
+	const UINT vPosBufferByteSize = (UINT)vposArray.size() * sizeof(VPosData);
+	const UINT vColorBufferByteSize = (UINT)vcolorArray.size() * sizeof(VColorData);
 	const UINT indexBufferByteSize = (UINT)indicesArray.size() * sizeof(std::uint16_t);
 
 	m_boxGeometry = std::make_unique<MeshGeometry>();
 	m_boxGeometry->Name = "BoxGeo";
 
 	ThrowIfFailed(D3DCreateBlob(
-		vertexBufferByteSize,
-		&m_boxGeometry->vertexBufferCPU));
+		vPosBufferByteSize,
+		&m_boxGeometry->vPosBufferCPU));
+
+	ThrowIfFailed(D3DCreateBlob(
+		vColorBufferByteSize,
+		&m_boxGeometry->vColorBufferCPU));
 
 	CopyMemory(
-		m_boxGeometry->vertexBufferCPU->GetBufferPointer(),
-		verticesArray.data(),
-		vertexBufferByteSize);
+		m_boxGeometry->vPosBufferCPU->GetBufferPointer(),
+		vposArray.data(),
+		vPosBufferByteSize);
+
+	CopyMemory(
+		m_boxGeometry->vColorBufferCPU->GetBufferPointer(),
+		vcolorArray.data(),
+		vColorBufferByteSize);
 
 	ThrowIfFailed(D3DCreateBlob(
 		indexBufferByteSize,
@@ -344,11 +364,18 @@ void DrawApp::BuildBox()
 		indicesArray.data(),
 		indexBufferByteSize);
 
-	m_boxGeometry->vertexBufferGPU = CreateDefaultBuffer(
+	m_boxGeometry->vPosBufferGPU = CreateDefaultBuffer(
 		m_device.Get(),
 		m_commandList.Get(),
-		verticesArray.data(),
-		vertexBufferByteSize,
+		vposArray.data(),
+		vPosBufferByteSize,
+		m_boxGeometry->vertexBufferUploader);
+
+	m_boxGeometry->vColorBufferGPU = CreateDefaultBuffer(
+		m_device.Get(),
+		m_commandList.Get(),
+		vcolorArray.data(),
+		vColorBufferByteSize,
 		m_boxGeometry->vertexBufferUploader);
 
 	m_boxGeometry->indexBufferGPU = CreateDefaultBuffer(
@@ -358,8 +385,10 @@ void DrawApp::BuildBox()
 		indexBufferByteSize,
 		m_boxGeometry->indexBufferUploader);
 
-	m_boxGeometry->vertexByteStride = sizeof(Vertex);
-	m_boxGeometry->vertexBufferByteSize = vertexBufferByteSize;
+	m_boxGeometry->vPosByteStride = sizeof(VPosData);
+	m_boxGeometry->vPosBufferByteSize= vPosBufferByteSize;
+	m_boxGeometry->vColorByteStride = sizeof(VColorData);
+	m_boxGeometry->vColorBufferByteSize = vColorBufferByteSize;
 	m_boxGeometry->indexFormat = DXGI_FORMAT_R16_UINT;
 	m_boxGeometry->indexBufferByteSize = indexBufferByteSize;
 

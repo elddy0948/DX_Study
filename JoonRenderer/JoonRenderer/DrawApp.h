@@ -24,9 +24,13 @@ struct ObjectConstants
 	XMFLOAT4X4 WorldViewProj = Identity4x4;
 };
 
-struct Vertex
+struct VPosData
 {
 	XMFLOAT3 Pos;
+};
+
+struct VColorData
+{
 	XMFLOAT4 Color;
 };
 
