@@ -22,8 +22,7 @@ bool DrawApp::Initialize()
 	BuildRootSignature();
 	BuildShaders();
 	SetInputLayout();
-	//BuildBox();
-	BuildPyramid();
+	BuildGeo();
 	BuildPSO();
 
 	ThrowIfFailed(m_commandList->Close());
@@ -64,7 +63,6 @@ void DrawApp::Update()
 	ObjectConstants objectConstants;
 	XMStoreFloat4x4(&objectConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
 	objectConstants.gTime = gameTime;
-	//XMStoreFloat(&objectConstants.gTime, XMLoadFloat(&gameTime));
 	m_objectConstantBuffer->CopyData(0, objectConstants);
 }
 
@@ -105,40 +103,36 @@ void DrawApp::Draw()
 
 	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 
-	/*D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] =
-	{
-		m_boxGeometry->VertexPositionBufferView(),
-		m_boxGeometry->VertexColorBufferView()
-	};
-
-	m_commandList->IASetVertexBuffers(0, 2, vertexBufferViews);
-	m_commandList->IASetIndexBuffer(&m_boxGeometry->IndexBufferView());
-	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	m_commandList->SetGraphicsRootDescriptorTable(
-		0,
-		m_constantBufferHeap->GetGPUDescriptorHandleForHeapStart());
-
-	m_commandList->DrawIndexedInstanced(
-		m_boxGeometry->drawArgs["box"].IndexCount,
-		1, 0, 0, 0);*/
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] =
 	{
-		m_pyramidGeometry->VertexPositionBufferView(),
-		m_pyramidGeometry->VertexColorBufferView()
+		m_geo->VertexPositionBufferView(),
+		m_geo->VertexColorBufferView()
 	};
 
 	m_commandList->IASetVertexBuffers(0, 2, vertexBufferViews);
-	m_commandList->IASetIndexBuffer(&m_pyramidGeometry->IndexBufferView());
-	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_commandList->IASetIndexBuffer(&m_geo->IndexBufferView());
+	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP);
 
 	m_commandList->SetGraphicsRootDescriptorTable(
 		0,
-		m_constantBufferHeap->GetGPUDescriptorHandleForHeapStart());
+		m_constantBufferHeap->GetGPUDescriptorHandleForHeapStart()
+	);
 
 	m_commandList->DrawIndexedInstanced(
-		m_pyramidGeometry->drawArgs["pyramid"].IndexCount,
-		1, 0, 0, 0);
+		m_geo->drawArgs["box"].IndexCount,
+		1,
+		m_geo->drawArgs["box"].StartIndexLocation,
+		m_geo->drawArgs["box"].BaseVertexLocation,
+		0
+	);
+
+	m_commandList->DrawIndexedInstanced(
+		m_geo->drawArgs["pyramid"].IndexCount,
+		1,
+		m_geo->drawArgs["pyramid"].StartIndexLocation,
+		m_geo->drawArgs["pyramid"].BaseVertexLocation,
+		0
+	);
 
 	m_commandList->ResourceBarrier(
 		1,
@@ -310,229 +304,144 @@ void DrawApp::SetInputLayout()
 	};
 }
 
-void DrawApp::BuildBox()
+void DrawApp::BuildGeo()
 {
-	std::array<VPosData, 8> vposArray =
+	std::array<VPosData, 13> vPosArray =
 	{
-		VPosData({XMFLOAT3(-1.0f, -1.0f, -1.0f)}), VPosData({XMFLOAT3(-1.0f, 1.0f, -1.0f)}),
-		VPosData({XMFLOAT3(1.0f, 1.0f, -1.0f)}), VPosData({XMFLOAT3(1.0f, -1.0f, -1.0f)}),
-		VPosData({XMFLOAT3(-1.0f, -1.0f, 1.0f)}), VPosData({XMFLOAT3(-1.0f, 1.0f, 1.0f)}),
-		VPosData({XMFLOAT3(1.0f, 1.0f, 1.0f)}), VPosData({XMFLOAT3(1.0f, -1.0f, 1.0f)}),
-	};
-
-	std::array<VColorData, 8> vcolorArray =
-	{
-		VColorData({XMFLOAT4(Colors::White)}), VColorData({XMFLOAT4(Colors::Black)}),
-		VColorData({XMFLOAT4(Colors::Red)}), VColorData({XMFLOAT4(Colors::Green)}),
-		VColorData({XMFLOAT4(Colors::Blue)}), VColorData({XMFLOAT4(Colors::Yellow)}),
-		VColorData({XMFLOAT4(Colors::Cyan)}), VColorData({XMFLOAT4(Colors::Magenta)}),
-	};
-
-	std::array<std::uint16_t, 36> indicesArray =
-	{
-		// front
-		0, 1, 2,
-		0, 2, 3,
-		// back
-		4, 6, 5,
-		4, 7, 6,
-		// left
-		4, 5, 1,
-		4, 1, 0,
-		// right
-		3, 2, 6,
-		3, 6, 7,
-		// upper
-		1, 5, 6,
-		1, 6, 2,
-		// below
-		4, 0, 3,
-		4, 3, 7,
-	};
-
-	const UINT vPosBufferByteSize = (UINT)vposArray.size() * sizeof(VPosData);
-	const UINT vColorBufferByteSize = (UINT)vcolorArray.size() * sizeof(VColorData);
-	const UINT indexBufferByteSize = (UINT)indicesArray.size() * sizeof(std::uint16_t);
-
-	m_boxGeometry = std::make_unique<MeshGeometry>();
-	m_boxGeometry->Name = "BoxGeo";
-
-	ThrowIfFailed(D3DCreateBlob(
-		vPosBufferByteSize,
-		&m_boxGeometry->vPosBufferCPU));
-
-	ThrowIfFailed(D3DCreateBlob(
-		vColorBufferByteSize,
-		&m_boxGeometry->vColorBufferCPU));
-
-	CopyMemory(
-		m_boxGeometry->vPosBufferCPU->GetBufferPointer(),
-		vposArray.data(),
-		vPosBufferByteSize);
-
-	CopyMemory(
-		m_boxGeometry->vColorBufferCPU->GetBufferPointer(),
-		vcolorArray.data(),
-		vColorBufferByteSize);
-
-	ThrowIfFailed(D3DCreateBlob(
-		indexBufferByteSize,
-		&m_boxGeometry->indexBufferCPU));
-
-	CopyMemory(
-		m_boxGeometry->indexBufferCPU->GetBufferPointer(),
-		indicesArray.data(),
-		indexBufferByteSize);
-
-	m_boxGeometry->vPosBufferGPU = CreateDefaultBuffer(
-		m_device.Get(),
-		m_commandList.Get(),
-		vposArray.data(),
-		vPosBufferByteSize,
-		m_boxGeometry->vPosBufferUploader);
-
-	m_boxGeometry->vColorBufferGPU = CreateDefaultBuffer(
-		m_device.Get(),
-		m_commandList.Get(),
-		vcolorArray.data(),
-		vColorBufferByteSize,
-		m_boxGeometry->vColorBufferUploader);
-
-	m_boxGeometry->indexBufferGPU = CreateDefaultBuffer(
-		m_device.Get(),
-		m_commandList.Get(),
-		indicesArray.data(),
-		indexBufferByteSize,
-		m_boxGeometry->indexBufferUploader);
-
-	m_boxGeometry->vPosByteStride = sizeof(VPosData);
-	m_boxGeometry->vPosBufferByteSize= vPosBufferByteSize;
-	m_boxGeometry->vColorByteStride = sizeof(VColorData);
-	m_boxGeometry->vColorBufferByteSize = vColorBufferByteSize;
-	m_boxGeometry->indexFormat = DXGI_FORMAT_R16_UINT;
-	m_boxGeometry->indexBufferByteSize = indexBufferByteSize;
-
-	SubmeshGeometry submesh;
-	submesh.IndexCount = (UINT)indicesArray.size();
-	submesh.StartIndexLocation = 0;
-	submesh.BaseVertexLocation = 0;
-
-	m_boxGeometry->drawArgs["box"] = submesh;
-}
-
-void DrawApp::BuildPyramid()
-{
-	//Vertices
-	std::array<VPosData, 5> vPosArray =
-	{
-		VPosData({XMFLOAT3{0.0f, 0.0f, -1.0f}}),
-		VPosData({XMFLOAT3{-1.0f, 0.0f, 0.0f}}),
-		VPosData({XMFLOAT3{1.0f, 0.0f, 0.0f}}),
-		VPosData({XMFLOAT3{0.0f, 0.0f, 1.0f}}),
+		// Box
+		VPosData({XMFLOAT3(-0.5f, -0.5f, -0.5f)}), VPosData({XMFLOAT3(-0.5f, 0.5f, -0.5f)}),
+		VPosData({XMFLOAT3(0.5f, 0.5f, -0.5f)}), VPosData({XMFLOAT3(0.5f, -0.5f, -0.5f)}),
+		VPosData({XMFLOAT3(-0.5f, -0.5f, 0.5f)}), VPosData({XMFLOAT3(-0.5f, 0.5f, 0.5f)}),
+		VPosData({XMFLOAT3(0.5f, 0.5f, 0.5f)}), VPosData({XMFLOAT3(0.5f, -0.5f, 0.5f)}),
+		// Pyramid
+		VPosData({XMFLOAT3{0.0f, 0.5f, -1.0f}}), VPosData({XMFLOAT3{-1.0f, 0.5f, 0.0f}}),
+		VPosData({XMFLOAT3{1.0f, 0.5f, 0.0f}}), VPosData({XMFLOAT3{0.0f, 0.5f, 1.0f}}),
 		VPosData({XMFLOAT3{0.0f, 1.0f, 0.0f}}),
 	};
 
-	std::array<VColorData, 5> vColorArray =
+	std::array<VColorData, 13> vColorArray =
 	{
-		VColorData({XMFLOAT4{Colors::Green}}),
-		VColorData({XMFLOAT4{Colors::Green}}),
-		VColorData({XMFLOAT4{Colors::Green}}),
-		VColorData({XMFLOAT4{Colors::Green}}),
+		// Box
+		VColorData({XMFLOAT4(Colors::Black)}), VColorData({XMFLOAT4(Colors::Black)}),
+		VColorData({XMFLOAT4(Colors::Black)}), VColorData({XMFLOAT4(Colors::Black)}),
+		VColorData({XMFLOAT4(Colors::Black)}), VColorData({XMFLOAT4(Colors::Black)}),
+		VColorData({XMFLOAT4(Colors::Black)}), VColorData({XMFLOAT4(Colors::Black)}),
+		// Pyramid
+		VColorData({XMFLOAT4{Colors::Green}}), VColorData({XMFLOAT4{Colors::Green}}),
+		VColorData({XMFLOAT4{Colors::Green}}), VColorData({XMFLOAT4{Colors::Green}}),
 		VColorData({XMFLOAT4{Colors::Red}}),
 	};
 
-	//Indices
-	std::array<std::uint16_t, 18> indices =
+	std::array<std::uint16_t, 54> indices =
 	{
-		0, 2, 1,
-		1, 2, 3,
-		0, 1, 4,
-		0, 4, 2,
-		2, 4, 3,
-		3, 4, 1
+		// Box
+		// front
+		0, 1, 2, 0, 2, 3,
+		// back
+		4, 6, 5, 4, 7, 6,
+		// left
+		4, 5, 1, 4, 1, 0,
+		// right
+		3, 2, 6, 3, 6, 7,
+		// upper
+		1, 5, 6, 1, 6, 2,
+		// below
+		4, 0, 3, 4, 3, 7,
+		// Pyramid
+		8, 10, 9,
+		9, 10, 11,
+		8, 9, 12,
+		8, 12, 10,
+		10, 12, 11,
+		11, 12, 9,
 	};
 
 	const UINT vPosBufferByteSize = (UINT)vPosArray.size() * sizeof(VPosData);
 	const UINT vColorBufferByteSize = (UINT)vColorArray.size() * sizeof(VColorData);
-	const UINT indicesBufferByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+	const UINT indexBufferByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
-	m_pyramidGeometry = std::make_unique<MeshGeometry>();
-	m_pyramidGeometry->Name = "Pyramid Geo";
+	m_geo = std::make_unique<MeshGeometry>();
+	m_geo->Name = "Geometry";
 
 	ThrowIfFailed(D3DCreateBlob(
 		vPosBufferByteSize,
-		&m_pyramidGeometry->vPosBufferCPU
+		&m_geo->vPosBufferCPU
 	));
 
 	ThrowIfFailed(D3DCreateBlob(
 		vColorBufferByteSize,
-		&m_pyramidGeometry->vColorBufferCPU
+		&m_geo->vColorBufferCPU
 	));
 
 	ThrowIfFailed(D3DCreateBlob(
-		indicesBufferByteSize,
-		&m_pyramidGeometry->indexBufferCPU
+		indexBufferByteSize,
+		&m_geo->indexBufferCPU
 	));
 
 	CopyMemory(
-		m_pyramidGeometry->vPosBufferCPU->GetBufferPointer(),
+		m_geo->vPosBufferCPU->GetBufferPointer(),
 		vPosArray.data(),
 		vPosBufferByteSize
 	);
 
 	CopyMemory(
-		m_pyramidGeometry->vColorBufferCPU->GetBufferPointer(),
+		m_geo->vColorBufferCPU->GetBufferPointer(),
 		vColorArray.data(),
 		vColorBufferByteSize
 	);
 
 	CopyMemory(
-		m_pyramidGeometry->indexBufferCPU->GetBufferPointer(),
+		m_geo->indexBufferCPU->GetBufferPointer(),
 		indices.data(),
-		indicesBufferByteSize
+		indexBufferByteSize
 	);
 
-	// Create GPU Buffer
-	m_pyramidGeometry->vPosBufferGPU = CreateDefaultBuffer(
+	m_geo->vPosBufferGPU = CreateDefaultBuffer(
 		m_device.Get(),
 		m_commandList.Get(),
 		vPosArray.data(),
 		vPosBufferByteSize,
-		m_pyramidGeometry->vPosBufferUploader
+		m_geo->vPosBufferUploader
 	);
 
-	m_pyramidGeometry->vColorBufferGPU = CreateDefaultBuffer(
+	m_geo->vColorBufferGPU = CreateDefaultBuffer(
 		m_device.Get(),
 		m_commandList.Get(),
 		vColorArray.data(),
 		vColorBufferByteSize,
-		m_pyramidGeometry->vColorBufferUploader
+		m_geo->vColorBufferUploader
 	);
 
-	m_pyramidGeometry->indexBufferGPU = CreateDefaultBuffer(
+	m_geo->indexBufferGPU = CreateDefaultBuffer(
 		m_device.Get(),
 		m_commandList.Get(),
 		indices.data(),
-		indicesBufferByteSize,
-		m_pyramidGeometry->indexBufferUploader
+		indexBufferByteSize,
+		m_geo->indexBufferUploader
 	);
 
-	m_pyramidGeometry->vPosByteStride = sizeof(VPosData);
-	m_pyramidGeometry->vColorByteStride = sizeof(VColorData);
+	m_geo->vPosByteStride = sizeof(VPosData);
+	m_geo->vColorByteStride = sizeof(VColorData);
+	
+	m_geo->indexFormat = DXGI_FORMAT_R16_UINT;
 
-	m_pyramidGeometry->vPosBufferByteSize = vPosBufferByteSize;
-	m_pyramidGeometry->vColorBufferByteSize = vColorBufferByteSize;
-	m_pyramidGeometry->indexBufferByteSize = indicesBufferByteSize;
+	m_geo->vPosBufferByteSize = vPosBufferByteSize;
+	m_geo->vColorBufferByteSize = vColorBufferByteSize;
+	m_geo->indexBufferByteSize = indexBufferByteSize;
 
-	m_pyramidGeometry->indexFormat = DXGI_FORMAT_R16_UINT;
+	SubmeshGeometry boxSubmesh;
+	boxSubmesh.IndexCount = 36;
+	boxSubmesh.BaseVertexLocation = 0;
+	boxSubmesh.StartIndexLocation = 0;
 
-	SubmeshGeometry submesh;
+	m_geo->drawArgs["box"] = boxSubmesh;
+	
+	SubmeshGeometry pyramidSubmesh;
+	pyramidSubmesh.IndexCount = 18;
+	pyramidSubmesh.BaseVertexLocation = 8;
+	pyramidSubmesh.StartIndexLocation = boxSubmesh.IndexCount;
 
-	submesh.IndexCount = (UINT)indices.size();
-	submesh.StartIndexLocation = 0;
-	submesh.BaseVertexLocation = 0;
-
-	m_pyramidGeometry->drawArgs["pyramid"] = submesh;
+	m_geo->drawArgs["pyramid"] = pyramidSubmesh;
 }
 
 void DrawApp::BuildPSO()
