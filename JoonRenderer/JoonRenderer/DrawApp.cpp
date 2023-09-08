@@ -111,10 +111,10 @@ void DrawApp::Draw()
 
 	m_commandList->IASetVertexBuffers(0, 2, vertexBufferViews);
 	m_commandList->IASetIndexBuffer(&m_geo->IndexBufferView());
-	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP);
+	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	m_commandList->SetGraphicsRootDescriptorTable(
-		1,
+		0,
 		m_constantBufferHeap->GetGPUDescriptorHandleForHeapStart()
 	);
 
@@ -479,7 +479,7 @@ void DrawApp::BuildPSO()
 	psoDesc.SampleDesc.Count = m_4xMSAAState ? 4 : 1;
 	psoDesc.SampleDesc.Quality = m_4xMSAAState ? (m_4xMSAAQuality - 1) : 0;
 	psoDesc.DSVFormat = m_depthStencilFormat;
-	
+
 	ThrowIfFailed(m_device->CreateGraphicsPipelineState(
 		&psoDesc,
 		IID_PPV_ARGS(&m_pso)));
