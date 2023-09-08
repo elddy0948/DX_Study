@@ -114,11 +114,11 @@ void DrawApp::Draw()
 	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP);
 
 	m_commandList->SetGraphicsRootDescriptorTable(
-		0,
+		1,
 		m_constantBufferHeap->GetGPUDescriptorHandleForHeapStart()
 	);
 
-	m_commandList->DrawIndexedInstanced(
+	/*m_commandList->DrawIndexedInstanced(
 		m_geo->drawArgs["box"].IndexCount,
 		1,
 		m_geo->drawArgs["box"].StartIndexLocation,
@@ -132,6 +132,14 @@ void DrawApp::Draw()
 		m_geo->drawArgs["pyramid"].StartIndexLocation,
 		m_geo->drawArgs["pyramid"].BaseVertexLocation,
 		0
+	);*/
+
+	m_commandList->DrawIndexedInstanced(
+		54,
+		1,
+		0,
+		0,
+		1
 	);
 
 	m_commandList->ResourceBarrier(
@@ -229,7 +237,6 @@ void DrawApp::BuildConstantBufferDescriptorHeap()
 void DrawApp::BuildConstantBuffer()
 {
 	UINT n = 2;
-	int i = 0;
 
 	m_objectConstantBuffer = std::make_unique<UploadBuffer<ObjectConstants>>(
 		m_device.Get( ),
@@ -239,9 +246,9 @@ void DrawApp::BuildConstantBuffer()
 	UINT objectConstantBufferByteSize = Helper::CalculateConstantBufferByteSize(sizeof(ObjectConstants));
 	D3D12_GPU_VIRTUAL_ADDRESS constantBufferAddress = m_objectConstantBuffer->Resource()->GetGPUVirtualAddress();
 
-	int boxConstantBufferIndex = i;
+	int boxConstantBufferIndex = 0;
 	constantBufferAddress += boxConstantBufferIndex * objectConstantBufferByteSize;
-	
+
 	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
 	cbvDesc.BufferLocation = constantBufferAddress;
 	cbvDesc.SizeInBytes = Helper::CalculateConstantBufferByteSize(sizeof(ObjectConstants));
@@ -314,8 +321,8 @@ void DrawApp::BuildGeo()
 		VPosData({XMFLOAT3(-0.5f, -0.5f, 0.5f)}), VPosData({XMFLOAT3(-0.5f, 0.5f, 0.5f)}),
 		VPosData({XMFLOAT3(0.5f, 0.5f, 0.5f)}), VPosData({XMFLOAT3(0.5f, -0.5f, 0.5f)}),
 		// Pyramid
-		VPosData({XMFLOAT3{0.0f, 0.5f, -1.0f}}), VPosData({XMFLOAT3{-1.0f, 0.5f, 0.0f}}),
-		VPosData({XMFLOAT3{1.0f, 0.5f, 0.0f}}), VPosData({XMFLOAT3{0.0f, 0.5f, 1.0f}}),
+		VPosData({XMFLOAT3{0.0f, 0.5f, -0.5f}}), VPosData({XMFLOAT3{-0.5f, 0.5f, 0.0f}}),
+		VPosData({XMFLOAT3{0.5f, 0.5f, 0.0f}}), VPosData({XMFLOAT3{0.0f, 0.5f, 0.5f}}),
 		VPosData({XMFLOAT3{0.0f, 1.0f, 0.0f}}),
 	};
 
