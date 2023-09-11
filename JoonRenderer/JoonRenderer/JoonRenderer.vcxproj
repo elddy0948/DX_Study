@@ -130,6 +130,7 @@
     <ClCompile Include="BaseApp.cpp" />
     <ClCompile Include="DrawApp.cpp" />
     <ClCompile Include="DxException.cpp" />
+    <ClCompile Include="FrameResource.cpp" />
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="main.cpp" />
@@ -139,9 +140,9 @@
     <ClInclude Include="BaseApp.h" />
     <ClInclude Include="DrawApp.h" />
     <ClInclude Include="DxException.h" />
+    <ClInclude Include="FrameResource.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="Helper.h" />
-    <ClInclude Include="InitApp.h" />
     <ClInclude Include="MeshGeometry.h" />
     <ClInclude Include="SubmeshGeometry.h" />
     <ClInclude Include="UploadBuffer.h" />
