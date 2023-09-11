@@ -11,14 +11,6 @@
 
 using namespace DirectX;
 
-static const XMFLOAT4X4 Identity4x4 =
-{
-	1.0f, 0.0f, 0.0f, 0.0f,
-	0.0f, 1.0f, 0.0f, 0.0f,
-	0.0f, 0.0f, 1.0f, 0.0f,
-	0.0f, 0.0f, 0.0f, 1.0f,
-};
-
 struct ObjectConstants
 {
 	XMFLOAT4X4 WorldViewProj = Identity4x4;

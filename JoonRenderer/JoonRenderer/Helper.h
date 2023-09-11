@@ -7,8 +7,11 @@
 #include <wrl.h>
 #include <d3dcompiler.h>
 #include <fstream>
+#include <DirectXMath.h>
 
 #include "DxException.h"
+
+using namespace DirectX;
 
 class Helper
 {
@@ -29,6 +32,14 @@ inline std::wstring AnsiToWString(const std::string& str)
 	MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, buffer, 512);
 	return std::wstring(buffer);
 }
+
+static const XMFLOAT4X4 Identity4x4 =
+{
+	1.0f, 0.0f, 0.0f, 0.0f,
+	0.0f, 1.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, 0.0f, 1.0f,
+};
 
 #ifndef ThrowIfFailed
 #define ThrowIfFailed(x)                                              \
