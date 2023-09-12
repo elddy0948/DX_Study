@@ -42,6 +42,12 @@
     <ClCompile Include="FrameResource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ShapesApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometryGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DxException.h">
@@ -74,12 +80,27 @@
     <ClInclude Include="FrameResource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RenderItem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapesApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometryGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="MyVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="MyPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ShapesVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ShapesPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

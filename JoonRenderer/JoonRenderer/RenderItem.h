@@ -2,18 +2,17 @@
 
 #include "Helper.h"
 #include "MeshGeometry.h"
+#include "FrameResource.h"
 
 using namespace DirectX;
-
-const int gNumFramesDirty = 0;
 
 struct RenderItem
 {
 	RenderItem() = default;
 
-	XMFLOAT4X4 world = Identity4x4;
+	XMFLOAT4X4 inWorldSpace = Identity4x4;
 
-	int numFramesDirty = gNumFramesDirty;
+	int constantBufferChangeFlag = NumFrameResources;
 
 	UINT objectConstantBufferIndex = -1;
 
