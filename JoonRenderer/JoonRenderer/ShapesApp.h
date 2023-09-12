@@ -1,8 +1,23 @@
 #pragma once
 
+#include "Helper.h"
 #include "BaseApp.h"
 #include "FrameResource.h"
 #include "RenderItem.h"
+#include "GeometryGenerator.h"
+
+using namespace Microsoft::WRL;
+using namespace DirectX;
+
+struct VertexPositionData
+{
+	XMFLOAT3 position;
+};
+
+struct VertexColorData
+{
+	XMFLOAT4 color;
+};
 
 class ShapesApp : public BaseApp
 {
@@ -20,6 +35,8 @@ protected:
 	void UpdateMainPassConstantBuffer();
 
 	void ConfigureRootSignature();
+
+	void BuildShapeGeometry();
 
 	virtual void Update() override;
 	virtual void Draw() override;
@@ -42,4 +59,8 @@ protected:
 	XMFLOAT4X4 m_view = Identity4x4;
 	XMFLOAT4X4 m_proj = Identity4x4;
 	XMFLOAT3 m_eyePos;
+
+	std::unordered_map<std::string, std::unique_ptr<MeshGeometry>> m_geometries;
+	std::unordered_map<std::string, ComPtr<ID3DBlob>> m_shaders;
+	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>> m_PSOs;
 };

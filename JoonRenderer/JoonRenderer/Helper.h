@@ -1,13 +1,19 @@
 #pragma once
 
+#include <algorithm>
 #include <string>
 #include <Windows.h>
 #include <d3d12.h>
+#include <d3dx12.h>
 #include <d3dcommon.h>
+#include <dxgi1_6.h>
 #include <wrl.h>
 #include <d3dcompiler.h>
 #include <fstream>
 #include <DirectXMath.h>
+#include <vector>
+#include <unordered_map>
+#include <utility>
 
 #include "DxException.h"
 
@@ -24,6 +30,12 @@ public:
 		const std::string& target);
 	static Microsoft::WRL::ComPtr<ID3DBlob> LoadBinary(
 		const std::wstring& filename);
+	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBuffer(
+		ID3D12Device* device,
+		ID3D12GraphicsCommandList* commandList,
+		const void* initData,
+		UINT64 byteSize,
+		Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer);
 };
 
 inline std::wstring AnsiToWString(const std::string& str)

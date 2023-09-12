@@ -56,13 +56,6 @@ private:
 	void BuildGeo();
 	void BuildPSO();
 
-	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBuffer(
-		ID3D12Device* device,
-		ID3D12GraphicsCommandList* commandList,
-		const void* initData,
-		UINT64 byteSize,
-		Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer);
-
 private:
 	float m_theta = 1.5f * XM_PI;
 	float m_phi = XM_PIDIV4;

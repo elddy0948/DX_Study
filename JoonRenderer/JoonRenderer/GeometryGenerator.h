@@ -1,10 +1,6 @@
 #pragma once
 
-
 // Introduction to 3d game programming with directx12 Âü°í
-#include <vector>
-#include <algorithm>
-
 #include "Helper.h"
 
 class GeometryGenerator
@@ -60,13 +56,12 @@ public:
 		std::vector<uint16> m_indices16;
 	};
 
-	// ...
-
-protected:
+public:
 	MeshData CreateBox(float width, float height, float depth, uint32 numSubdivisions);
 	MeshData CreateCylinder(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount);
 	MeshData CreateSphere(float radius, uint32 sliceCount, uint32 stackCount);
 	MeshData CreateGeoSphere(float radius, uint32 numSubdivisions);
+	MeshData CreateGrid(float width, float depth, uint32 m, uint32 n);
 
 private:
 	void BuildCylinderTopCap(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount, MeshData& meshData);
