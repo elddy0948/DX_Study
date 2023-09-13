@@ -27,6 +27,8 @@ public:
 	ShapesApp& operator=(const ShapesApp& rhs) = delete;
 	~ShapesApp();
 
+	virtual bool Initialize() override;
+
 protected:
 	void BuildFrameResources();
 
@@ -35,6 +37,9 @@ protected:
 	void UpdateMainPassConstantBuffer();
 
 	void ConfigureRootSignature();
+	void BuildShadersAndInputLayout();
+	void BuildPSOs();
+
 
 	void BuildShapeGeometry();
 	void BuildRenderItems();
@@ -44,6 +49,7 @@ protected:
 
 	virtual void Update() override;
 	virtual void Draw() override;
+	virtual void OnResize() override;
 
 protected:
 	// For frame resource
@@ -62,13 +68,14 @@ protected:
 
 	XMFLOAT4X4 m_view = Identity4x4;
 	XMFLOAT4X4 m_proj = Identity4x4;
-	XMFLOAT3 m_eyePos;
+	XMFLOAT3 m_eyePos = { 0.0f, 0.0f, 0.0f };
 
 	std::unordered_map<std::string, std::unique_ptr<MeshGeometry>> m_geometries;
 	std::unordered_map<std::string, ComPtr<ID3DBlob>> m_shaders;
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>> m_PSOs;
+	std::vector<D3D12_INPUT_ELEMENT_DESC> m_inputLayout;
 
-	ComPtr<ID3D12DescriptorHeap> m_cbvHeap;
+	ComPtr<ID3D12DescriptorHeap> m_cbvHeap = nullptr;
 	ComPtr<ID3D12RootSignature> m_rootSignature = nullptr;
 
 	UINT m_passCBVOffset = 0;

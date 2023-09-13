@@ -7,7 +7,41 @@ ShapesApp::ShapesApp(HINSTANCE hInstance) : BaseApp(hInstance) {}
 
 ShapesApp::~ShapesApp()
 {
-	BaseApp::~BaseApp();
+	if (m_device != nullptr)
+		FlushCommandQueue();
+}
+
+bool ShapesApp::Initialize()
+{
+	if (!BaseApp::Initialize()) { return false; }
+
+	ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
+
+	ConfigureRootSignature();
+	BuildShadersAndInputLayout();
+	BuildShapeGeometry();
+	BuildRenderItems();
+	BuildFrameResources();
+	BuildDescriptorHeaps();
+	BuildConstantBufferViews();
+	BuildPSOs();
+
+	ThrowIfFailed(m_commandList->Close());
+
+	ID3D12CommandList* cmdsLists[] = { m_commandList.Get() };
+	m_commandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+
+	FlushCommandQueue();
+
+	return true;
+}
+
+void ShapesApp::OnResize()
+{
+	BaseApp::OnResize();
+
+	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25 * 3.141592f, AspectRatio(), 1.0f, 1000.0f);
+	XMStoreFloat4x4(&m_proj, P);
 }
 
 void ShapesApp::BuildFrameResources()
@@ -85,7 +119,34 @@ void ShapesApp::ConfigureRootSignature()
 	slotRootParameters[1].InitAsDescriptorTable(1, &cbvTable1);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(2, slotRootParameters, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+	ComPtr<ID3DBlob> serializeRootSignature = nullptr;
+	ComPtr<ID3DBlob> errorBlob = nullptr;
+
+	HRESULT hr = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, serializeRootSignature.GetAddressOf(), errorBlob.GetAddressOf());
+
+	if (errorBlob != nullptr)
+	{
+		::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+	}
+
+	ThrowIfFailed(hr);
+	ThrowIfFailed(m_device->CreateRootSignature(
+		0, serializeRootSignature->GetBufferPointer(), serializeRootSignature->GetBufferSize(), IID_PPV_ARGS(m_rootSignature.GetAddressOf())
+	));
 }
+
+void ShapesApp::BuildShadersAndInputLayout()
+{
+	m_shaders["VS"] = Helper::CompileShader(L"ShapesVS.hlsl", nullptr, "main", "vs_5_1");
+	m_shaders["PS"] = Helper::CompileShader(L"ShapesPS.hlsl", nullptr, "main", "ps_5_1");
+	m_inputLayout =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA},
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA}
+	};
+}
+
 
 void ShapesApp::BuildShapeGeometry()
 {
@@ -373,7 +434,6 @@ void ShapesApp::DrawRenderItems(ID3D12GraphicsCommandList* commandList, const st
 	}
 }
 
-
 void ShapesApp::Update()
 {
 	// 다음 FrameResource에 접근
@@ -391,6 +451,8 @@ void ShapesApp::Update()
 	}
 
 	// m_currentFrameResource의 자원들을 갱신한다.
+	UpdateObjectConstantBuffers();
+	UpdateMainPassConstantBuffer();
 }
 
 void ShapesApp::Draw()
@@ -444,4 +506,41 @@ void ShapesApp::Draw()
 
 	m_currentFrameResource->fence = ++m_currentFence;
 	m_commandQueue->Signal(m_fence.Get(), m_currentFence);
+}
+
+void ShapesApp::BuildPSOs()
+{
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaquePSODesc;
+
+	ZeroMemory(&opaquePSODesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+	opaquePSODesc.InputLayout = { m_inputLayout.data(), (UINT)m_inputLayout.size() };
+	opaquePSODesc.pRootSignature = m_rootSignature.Get();
+	opaquePSODesc.VS =
+	{
+		reinterpret_cast<BYTE*>(m_shaders["VS"]->GetBufferPointer()),
+		m_shaders["VS"]->GetBufferSize()
+	};
+	opaquePSODesc.PS =
+	{
+		reinterpret_cast<BYTE*>(m_shaders["PS"]->GetBufferPointer()),
+		m_shaders["PS"]->GetBufferSize()
+	};
+
+	opaquePSODesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	opaquePSODesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
+	opaquePSODesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	opaquePSODesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	opaquePSODesc.SampleMask = UINT_MAX;
+	opaquePSODesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	opaquePSODesc.NumRenderTargets = 1;
+	opaquePSODesc.RTVFormats[0] = m_backBufferFormat;
+	opaquePSODesc.SampleDesc.Count = m_4xMSAAState ? 4 : 1;
+	opaquePSODesc.SampleDesc.Quality = m_4xMSAAState ? (m_4xMSAAQuality - 1) : 0;
+	opaquePSODesc.DSVFormat = m_depthStencilFormat;
+
+	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&opaquePSODesc, IID_PPV_ARGS(&m_PSOs["opaque"])));
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaqueWireframePSODesc = opaquePSODesc;
+	opaqueWireframePSODesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&opaqueWireframePSODesc, IID_PPV_ARGS(&m_PSOs["opaque_wireframe"])));
 }
