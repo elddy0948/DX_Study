@@ -37,6 +37,7 @@ protected:
 	void ConfigureRootSignature();
 
 	void BuildShapeGeometry();
+	void BuildRenderItems();
 
 	virtual void Update() override;
 	virtual void Draw() override;

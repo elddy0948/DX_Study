@@ -200,6 +200,90 @@ void ShapesApp::BuildShapeGeometry()
 	m_geometries[geo->Name] = std::move(geo);
 }
 
+void ShapesApp::BuildRenderItems()
+{
+	auto boxRenderItem = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&boxRenderItem->inWorldSpace, XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixTranslation(0.0f, 0.5f, 0.0f));
+	boxRenderItem->objectConstantBufferIndex = 0;
+	boxRenderItem->geo = m_geometries["ShapeGeo"].get();
+	boxRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	boxRenderItem->indexCount = boxRenderItem->geo->drawArgs["box"].IndexCount;
+	boxRenderItem->startIndexLocation = boxRenderItem->geo->drawArgs["box"].StartIndexLocation;
+	boxRenderItem->baseVertexLocation = boxRenderItem->geo->drawArgs["box"].BaseVertexLocation;
+
+	m_allRenderItems.push_back(std::move(boxRenderItem));
+
+	auto gridRenderItem = std::make_unique<RenderItem>();
+	gridRenderItem->inWorldSpace = Identity4x4;
+	gridRenderItem->objectConstantBufferIndex = 1;
+	gridRenderItem->geo = m_geometries["ShapeGeo"].get();
+	gridRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	gridRenderItem->indexCount = gridRenderItem->geo->drawArgs["grid"].IndexCount;
+	gridRenderItem->startIndexLocation = gridRenderItem->geo->drawArgs["grid"].StartIndexLocation;
+	gridRenderItem->baseVertexLocation = gridRenderItem->geo->drawArgs["grid"].BaseVertexLocation;
+
+	m_allRenderItems.push_back(std::move(gridRenderItem));
+
+	UINT objectCBIndex = 2;
+
+	for (int i = 0; i < 5; ++i)
+	{
+		auto leftCylinderRenderItem = std::make_unique<RenderItem>();
+		auto rightCylinderRenderItem = std::make_unique<RenderItem>();
+		auto leftSphereRenderItem = std::make_unique<RenderItem>();
+		auto rightSphereRenderItem = std::make_unique<RenderItem>();
+
+		XMMATRIX leftCylinderWorld = XMMatrixTranslation(-5.0f, 1.5f, -10.0f + i * 5.0f);
+		XMMATRIX rightCylinderWorld = XMMatrixTranslation(+5.0f, 1.0f, -10.0f + i * 5.0f);
+
+		XMMATRIX leftSphereWorld = XMMatrixTranslation(-5.0f, 3.5f, -10.0f + i * 5.0f);
+		XMMATRIX rightSphereWorld = XMMatrixTranslation(5.0f, 3.5f, -10.5f + i * 5.0f);
+
+		XMStoreFloat4x4(&leftCylinderRenderItem->inWorldSpace, leftCylinderWorld);
+		leftCylinderRenderItem->objectConstantBufferIndex = objectCBIndex++;
+		leftCylinderRenderItem->geo = m_geometries["ShapeGeo"].get();
+		leftCylinderRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		leftCylinderRenderItem->indexCount = leftCylinderRenderItem->geo->drawArgs["cylinder"].IndexCount;
+		leftCylinderRenderItem->startIndexLocation = leftCylinderRenderItem->geo->drawArgs["cylinder"].StartIndexLocation;
+		leftCylinderRenderItem->baseVertexLocation = leftCylinderRenderItem->geo->drawArgs["cylinder"].BaseVertexLocation;
+
+		XMStoreFloat4x4(&rightCylinderRenderItem->inWorldSpace, rightCylinderWorld);
+		rightCylinderRenderItem->objectConstantBufferIndex = objectCBIndex++;
+		rightCylinderRenderItem->geo = m_geometries["ShapeGeo"].get();
+		rightCylinderRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		rightCylinderRenderItem->indexCount = rightCylinderRenderItem->geo->drawArgs["cylinder"].IndexCount;
+		rightCylinderRenderItem->startIndexLocation = rightCylinderRenderItem->geo->drawArgs["cylinder"].StartIndexLocation;
+		rightCylinderRenderItem->baseVertexLocation = rightCylinderRenderItem->geo->drawArgs["cylinder"].BaseVertexLocation;
+
+		XMStoreFloat4x4(&leftSphereRenderItem->inWorldSpace, leftSphereWorld);
+		leftSphereRenderItem->objectConstantBufferIndex = objectCBIndex++;
+		leftSphereRenderItem->geo = m_geometries["ShapeGeo"].get();
+		leftSphereRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		leftSphereRenderItem->indexCount = leftSphereRenderItem->geo->drawArgs["sphere"].IndexCount;
+		leftSphereRenderItem->startIndexLocation = leftSphereRenderItem->geo->drawArgs["sphere"].StartIndexLocation;
+		leftSphereRenderItem->baseVertexLocation = leftSphereRenderItem->geo->drawArgs["sphere"].BaseVertexLocation;
+
+		XMStoreFloat4x4(&rightSphereRenderItem->inWorldSpace, rightSphereWorld);
+		rightSphereRenderItem->objectConstantBufferIndex = objectCBIndex++;
+		rightSphereRenderItem->geo = m_geometries["ShapeGeo"].get();
+		rightSphereRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		rightSphereRenderItem->indexCount = rightSphereRenderItem->geo->drawArgs["sphere"].IndexCount;
+		rightSphereRenderItem->startIndexLocation = rightSphereRenderItem->geo->drawArgs["sphere"].StartIndexLocation;
+		rightSphereRenderItem->baseVertexLocation = rightSphereRenderItem->geo->drawArgs["sphere"].BaseVertexLocation;
+
+		m_allRenderItems.push_back(std::move(leftCylinderRenderItem));
+		m_allRenderItems.push_back(std::move(rightCylinderRenderItem));
+		m_allRenderItems.push_back(std::move(leftSphereRenderItem));
+		m_allRenderItems.push_back(std::move(rightSphereRenderItem));
+	}
+
+	for (auto& element : m_allRenderItems)
+	{
+		m_opaqueRenderItems.push_back(element.get());
+	}
+}
+
+
 void ShapesApp::Update()
 {
 	// 다음 FrameResource에 접근
