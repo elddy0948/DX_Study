@@ -155,7 +155,7 @@ void ShapesApp::BuildShapeGeometry()
 	GeometryGenerator::MeshData box = geoGenerator.CreateBox(1.5f, 0.5f, 1.5f, 3);
 	GeometryGenerator::MeshData grid = geoGenerator.CreateGrid(20.0f, 30.0f, 60, 40);
 	GeometryGenerator::MeshData sphere = geoGenerator.CreateSphere(0.5f, 20, 20);
-	GeometryGenerator::MeshData cylinder = geoGenerator.CreateCylinder(0.5f, 0.3f, 0.3f, 20, 20);
+	GeometryGenerator::MeshData cylinder = geoGenerator.CreateCylinder(0.5f, 0.3f, 3.0f, 20, 20);
 
 	UINT boxVertexOffset = 0;
 	UINT gridVertexOffset = (UINT)box.vertices.size();
@@ -297,10 +297,10 @@ void ShapesApp::BuildRenderItems()
 		auto rightSphereRenderItem = std::make_unique<RenderItem>();
 
 		XMMATRIX leftCylinderWorld = XMMatrixTranslation(-5.0f, 1.5f, -10.0f + i * 5.0f);
-		XMMATRIX rightCylinderWorld = XMMatrixTranslation(+5.0f, 1.0f, -10.0f + i * 5.0f);
+		XMMATRIX rightCylinderWorld = XMMatrixTranslation(5.0f, 1.5f, -10.0f + i * 5.0f);
 
 		XMMATRIX leftSphereWorld = XMMatrixTranslation(-5.0f, 3.5f, -10.0f + i * 5.0f);
-		XMMATRIX rightSphereWorld = XMMatrixTranslation(5.0f, 3.5f, -10.5f + i * 5.0f);
+		XMMATRIX rightSphereWorld = XMMatrixTranslation(5.0f, 3.5f, -10.0f + i * 5.0f);
 
 		XMStoreFloat4x4(&leftCylinderRenderItem->inWorldSpace, leftCylinderWorld);
 		leftCylinderRenderItem->objectConstantBufferIndex = objectCBIndex++;
