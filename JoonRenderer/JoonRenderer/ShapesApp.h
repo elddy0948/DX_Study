@@ -40,6 +40,7 @@ protected:
 	void BuildRenderItems();
 	void BuildDescriptorHeaps();
 	void BuildConstantBufferViews();
+	void DrawRenderItems(ID3D12GraphicsCommandList* commandList, const std::vector<RenderItem*>& renderItems);
 
 	virtual void Update() override;
 	virtual void Draw() override;

@@ -343,6 +343,35 @@ void ShapesApp::BuildConstantBufferViews()
 	}
 }
 
+void ShapesApp::DrawRenderItems(ID3D12GraphicsCommandList* commandList, const std::vector<RenderItem*>& renderItems)
+{
+	UINT objectCBByteSize = Helper::CalculateConstantBufferByteSize(sizeof(ObjectConstants));
+	auto objectConstantBuffer = m_currentFrameResource->objectConstantBuffer->Resource();
+
+	for (size_t i = 0; i < renderItems.size(); ++i)
+	{
+		auto renderItem = renderItems[i];
+
+		D3D12_VERTEX_BUFFER_VIEW vbv[2] =
+		{
+			renderItem->geo->VertexPositionBufferView(),
+			renderItem->geo->VertexColorBufferView()
+		};
+
+		commandList->IASetVertexBuffers(0, 2, vbv);
+		commandList->IASetIndexBuffer(&renderItem->geo->IndexBufferView());
+		commandList->IASetPrimitiveTopology(renderItem->primitiveType);
+
+		UINT cbvIndex = m_currentFrameResourceIndex * (UINT)m_opaqueRenderItems.size() + renderItem->objectConstantBufferIndex;
+		auto cbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_cbvHeap->GetGPUDescriptorHandleForHeapStart());
+		cbvHandle.Offset(cbvIndex, m_cbvsrvDescriptorSize);
+
+		commandList->SetGraphicsRootDescriptorTable(0, cbvHandle);
+		commandList->DrawIndexedInstanced(renderItem->indexCount, 1, renderItem->startIndexLocation, renderItem->baseVertexLocation, 0);
+	}
+}
+
+
 void ShapesApp::Update()
 {
 	// 다음 FrameResource에 접근
