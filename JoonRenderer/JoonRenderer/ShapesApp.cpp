@@ -299,7 +299,49 @@ void ShapesApp::BuildDescriptorHeaps()
 	ThrowIfFailed(m_device->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&m_cbvHeap)));
 }
 
+void ShapesApp::BuildConstantBufferViews()
+{
+	UINT objectCBByteSize = Helper::CalculateConstantBufferByteSize(sizeof(ObjectConstants));
+	UINT objectCount = (UINT)m_opaqueRenderItems.size();
 
+	for (int frameIndex = 0; frameIndex < NumFrameResources; ++frameIndex)
+	{
+		auto objectCB = m_frameResources[frameIndex]->objectConstantBuffer->Resource();
+		for (UINT i = 0; i < objectCount; ++i)
+		{
+			D3D12_GPU_VIRTUAL_ADDRESS cbAddress = objectCB->GetGPUVirtualAddress();
+			cbAddress += i * objectCBByteSize;
+
+			int heapIndex = frameIndex * objectCount + i;
+			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_cbvHeap->GetCPUDescriptorHandleForHeapStart());
+			handle.Offset(heapIndex, m_cbvsrvDescriptorSize);
+
+			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+			cbvDesc.BufferLocation = cbAddress;
+			cbvDesc.SizeInBytes = objectCBByteSize;
+
+			m_device->CreateConstantBufferView(&cbvDesc, handle);
+		}
+	}
+
+	UINT passCBByteSize = Helper::CalculateConstantBufferByteSize(sizeof(PassConstants));
+
+	for (int frameIndex = 0; frameIndex < NumFrameResources; ++frameIndex)
+	{
+		auto passCB = m_frameResources[frameIndex]->passConstantBuffer->Resource();
+		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = passCB->GetGPUVirtualAddress();
+
+		int heapIndex = m_passCBVOffset + frameIndex;
+		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_cbvHeap->GetCPUDescriptorHandleForHeapStart());
+		handle.Offset(heapIndex, m_cbvsrvDescriptorSize);
+
+		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+		cbvDesc.BufferLocation = cbAddress;
+		cbvDesc.SizeInBytes = passCBByteSize;
+
+		m_device->CreateConstantBufferView(&cbvDesc, handle);
+	}
+}
 
 void ShapesApp::Update()
 {

@@ -39,6 +39,7 @@ protected:
 	void BuildShapeGeometry();
 	void BuildRenderItems();
 	void BuildDescriptorHeaps();
+	void BuildConstantBufferViews();
 
 	virtual void Update() override;
 	virtual void Draw() override;
