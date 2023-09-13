@@ -69,6 +69,9 @@ protected:
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>> m_PSOs;
 
 	ComPtr<ID3D12DescriptorHeap> m_cbvHeap;
+	ComPtr<ID3D12RootSignature> m_rootSignature = nullptr;
 
 	UINT m_passCBVOffset = 0;
+
+	bool m_IsWireFrame = false;
 };

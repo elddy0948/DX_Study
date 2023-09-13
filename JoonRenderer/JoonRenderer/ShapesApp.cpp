@@ -3,6 +3,8 @@
 #include <d3dcommon.h>
 #include <DirectXColors.h>
 
+ShapesApp::ShapesApp(HINSTANCE hInstance) : BaseApp(hInstance) {}
+
 ShapesApp::~ShapesApp()
 {
 	BaseApp::~BaseApp();
@@ -393,6 +395,53 @@ void ShapesApp::Update()
 
 void ShapesApp::Draw()
 {
+	auto commandAllocator = m_currentFrameResource->commandAllocator;
+
+	ThrowIfFailed(commandAllocator->Reset());
+
+	if (m_IsWireFrame)
+	{
+		ThrowIfFailed(m_commandList->Reset(commandAllocator.Get(), m_PSOs["opaque_wireframe"].Get()));
+	}
+	else
+	{
+		ThrowIfFailed(m_commandList->Reset(commandAllocator.Get(), m_PSOs["opaque"].Get()));
+	}
+
+	m_commandList->RSSetViewports(1, &m_viewport);
+	m_commandList->RSSetScissorRects(1, &m_scissorRect);
+
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+		CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	m_commandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
+	m_commandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
+	m_commandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+
+	ID3D12DescriptorHeap* descriptorHeaps[] = { m_cbvHeap.Get() };
+	m_commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
+	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
+
+	int passCBVIndex = m_passCBVOffset + m_currentFrameResourceIndex;
+	auto passCBVHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_cbvHeap->GetGPUDescriptorHandleForHeapStart());
+	passCBVHandle.Offset(passCBVIndex, m_cbvsrvDescriptorSize);
+	m_commandList->SetGraphicsRootDescriptorTable(1, passCBVHandle);
+
+	DrawRenderItems(m_commandList.Get(), m_opaqueRenderItems);
+
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+	ThrowIfFailed(m_commandList->Close());
+
+	ID3D12CommandList* cmdsLists[] = { m_commandList.Get() };
+	m_commandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+
+	// 후면버퍼와 전면버퍼 교환
+	ThrowIfFailed(m_swapChain->Present(0, 0));
+	m_currentBackBuffer = (m_currentBackBuffer + 1) % SwapChainBufferCount;
+
 	m_currentFrameResource->fence = ++m_currentFence;
 	m_commandQueue->Signal(m_fence.Get(), m_currentFence);
 }
