@@ -283,6 +283,23 @@ void ShapesApp::BuildRenderItems()
 	}
 }
 
+void ShapesApp::BuildDescriptorHeaps()
+{
+	UINT objectCount = (UINT)m_opaqueRenderItems.size();
+	UINT numDescriptors = (objectCount + 1) * NumFrameResources;
+	
+	m_passCBVOffset = objectCount * NumFrameResources;
+
+	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc;
+	cbvHeapDesc.NumDescriptors = numDescriptors;
+	cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	cbvHeapDesc.NodeMask = 0;
+
+	ThrowIfFailed(m_device->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&m_cbvHeap)));
+}
+
+
 
 void ShapesApp::Update()
 {

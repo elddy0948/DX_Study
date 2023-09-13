@@ -38,6 +38,7 @@ protected:
 
 	void BuildShapeGeometry();
 	void BuildRenderItems();
+	void BuildDescriptorHeaps();
 
 	virtual void Update() override;
 	virtual void Draw() override;
@@ -64,4 +65,8 @@ protected:
 	std::unordered_map<std::string, std::unique_ptr<MeshGeometry>> m_geometries;
 	std::unordered_map<std::string, ComPtr<ID3DBlob>> m_shaders;
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>> m_PSOs;
+
+	ComPtr<ID3D12DescriptorHeap> m_cbvHeap;
+
+	UINT m_passCBVOffset = 0;
 };
