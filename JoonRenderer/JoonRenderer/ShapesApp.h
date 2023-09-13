@@ -47,9 +47,17 @@ protected:
 	void BuildConstantBufferViews();
 	void DrawRenderItems(ID3D12GraphicsCommandList* commandList, const std::vector<RenderItem*>& renderItems);
 
+	void UpdateCamera();
+
 	virtual void Update() override;
 	virtual void Draw() override;
 	virtual void OnResize() override;
+
+private:
+	virtual void OnLeftKeyDown() override;
+	virtual void OnRightKeyDown() override;
+	virtual void OnUpKeyDown() override;
+	virtual void OnDownKeyDown() override;
 
 protected:
 	// For frame resource
@@ -81,4 +89,8 @@ protected:
 	UINT m_passCBVOffset = 0;
 
 	bool m_IsWireFrame = false;
+
+	float m_theta = 1.5f * XM_PI;
+	float m_phi = XM_PIDIV4;
+	float m_radius = 5.0f;
 };

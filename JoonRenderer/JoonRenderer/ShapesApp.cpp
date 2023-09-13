@@ -75,6 +75,20 @@ void ShapesApp::UpdateObjectConstantBuffers()
 	}
 }
 
+void ShapesApp::UpdateCamera()
+{
+	m_eyePos.x = m_radius * sinf(m_phi) * cosf(m_theta);
+	m_eyePos.y = m_radius * sinf(m_phi) * sinf(m_phi);
+	m_eyePos.z = m_radius * cosf(m_phi);
+
+	XMVECTOR pos = XMVectorSet(m_eyePos.x, m_eyePos.y, m_eyePos.z, 1.0f);
+	XMVECTOR target = XMVectorZero();
+	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+	XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
+	XMStoreFloat4x4(&m_view, view);
+}
+
 // 렌더링 패스당 한번씩 갱신될 pass constant buffer의 갱신 함수
 void ShapesApp::UpdateMainPassConstantBuffer()
 {
@@ -436,6 +450,8 @@ void ShapesApp::DrawRenderItems(ID3D12GraphicsCommandList* commandList, const st
 
 void ShapesApp::Update()
 {
+	UpdateCamera();
+
 	// 다음 FrameResource에 접근
 	m_currentFrameResourceIndex = (m_currentFrameResourceIndex + 1) % NumFrameResources;
 	m_currentFrameResource = m_frameResources[m_currentFrameResourceIndex].get();
@@ -543,4 +559,29 @@ void ShapesApp::BuildPSOs()
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaqueWireframePSODesc = opaquePSODesc;
 	opaqueWireframePSODesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
 	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&opaqueWireframePSODesc, IID_PPV_ARGS(&m_PSOs["opaque_wireframe"])));
+}
+
+
+void ShapesApp::OnLeftKeyDown()
+{
+	float dx = XMConvertToRadians(-1.0f);
+	m_theta += dx;
+}
+
+void ShapesApp::OnRightKeyDown()
+{
+	float dx = XMConvertToRadians(1.0f);
+	m_theta += dx;
+}
+
+void ShapesApp::OnUpKeyDown()
+{
+	float dy = XMConvertToRadians(1.0f);
+	m_phi += dy;
+}
+
+void ShapesApp::OnDownKeyDown()
+{
+	float dy = XMConvertToRadians(-1.0f);
+	m_phi += dy;
 }
