@@ -44,6 +44,86 @@ void ShapesApp::OnResize()
 	XMStoreFloat4x4(&m_proj, P);
 }
 
+void ShapesApp::Update()
+{
+	// 다음 FrameResource에 접근
+	m_currentFrameResourceIndex = (m_currentFrameResourceIndex + 1) % NumFrameResources;
+	m_currentFrameResource = m_frameResources[m_currentFrameResourceIndex].get();
+
+	// Fence의 값을 보고 현재 GPU가 해당 resource를 가지고 작업 중인지 확인하고, 사용중이라면 기다린다.
+	if (m_currentFrameResource->fence != 0 && m_fence->GetCompletedValue() < m_currentFrameResource->fence)
+	{
+		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+
+		ThrowIfFailed(m_fence->SetEventOnCompletion(m_currentFrameResource->fence, eventHandle));
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
+	}
+
+	// m_currentFrameResource의 자원들을 갱신한다.
+	UpdateObjectConstantBuffers();
+	UpdateMainPassConstantBuffer();
+}
+
+void ShapesApp::Draw()
+{
+	auto commandAllocator = m_currentFrameResource->commandAllocator;
+
+	ThrowIfFailed(commandAllocator->Reset());
+
+	if (m_IsWireFrame)
+	{
+		ThrowIfFailed(m_commandList->Reset(commandAllocator.Get(), m_PSOs["opaque_wireframe"].Get()));
+	}
+	else
+	{
+		ThrowIfFailed(m_commandList->Reset(commandAllocator.Get(), m_PSOs["opaque"].Get()));
+	}
+
+	m_commandList->RSSetViewports(1, &m_viewport);
+	m_commandList->RSSetScissorRects(1, &m_scissorRect);
+
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+		CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	m_commandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
+	m_commandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
+	m_commandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+
+	// descriptor table을 pipeline에 묶는다.
+	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
+	ID3D12DescriptorHeap* descriptorHeaps[] = { m_cbvHeap.Get() };
+	m_commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
+	// Object CBV Descriptor table 묶기
+	auto objectCBVHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_cbvHeap->GetGPUDescriptorHandleForHeapStart());
+	objectCBVHandle.Offset(0, m_cbvsrvDescriptorSize);
+	m_commandList->SetGraphicsRootDescriptorTable(0, objectCBVHandle);
+
+	// Pass CBV Descriptor table 묶기
+	int passCBVIndex = m_passCBVOffset + m_currentFrameResourceIndex;
+	auto passCBVHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_cbvHeap->GetGPUDescriptorHandleForHeapStart());
+	passCBVHandle.Offset(passCBVIndex, m_cbvsrvDescriptorSize);
+	m_commandList->SetGraphicsRootDescriptorTable(1, passCBVHandle);
+
+	DrawRenderItems(m_commandList.Get(), m_opaqueRenderItems);
+
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+	ThrowIfFailed(m_commandList->Close());
+
+	ID3D12CommandList* cmdsLists[] = { m_commandList.Get() };
+	m_commandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+
+	// 후면버퍼와 전면버퍼 교환
+	ThrowIfFailed(m_swapChain->Present(0, 0));
+	m_currentBackBuffer = (m_currentBackBuffer + 1) % SwapChainBufferCount;
+
+	m_currentFrameResource->fence = ++m_currentFence;
+	m_commandQueue->Signal(m_fence.Get(), m_currentFence);
+}
+
 void ShapesApp::BuildFrameResources()
 {
 	for (int i = 0; i < NumFrameResources; ++i)
@@ -75,25 +155,10 @@ void ShapesApp::UpdateObjectConstantBuffers()
 	}
 }
 
-void ShapesApp::UpdateCamera()
-{
-	m_eyePos.x = m_radius * sinf(m_phi) * cosf(m_theta);
-	m_eyePos.y = m_radius * sinf(m_phi) * sinf(m_phi);
-	m_eyePos.z = m_radius * cosf(m_phi);
-
-	XMVECTOR pos = XMVectorSet(m_eyePos.x, m_eyePos.y, m_eyePos.z, 1.0f);
-	//XMVECTOR target = XMVectorZero();
-	XMVECTOR vCameraTarget = pos * XMVectorSet(1, 0, 1, 1);
-	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-	XMMATRIX view = XMMatrixLookAtLH(pos, vCameraTarget, up);
-	//view *= XMMatrixTranslation(1.0, 0.0f, 0.0f);
-	XMStoreFloat4x4(&m_view, view);
-}
-
-// 렌더링 패스당 한번씩 갱신될 pass constant buffer의 갱신 함수
 void ShapesApp::UpdateMainPassConstantBuffer()
 {
+	// 렌더링 패스당 한번씩 갱신될 pass constant buffer의 갱신 함수
+
 	XMMATRIX view = XMLoadFloat4x4(&m_view);
 	XMMATRIX proj = XMLoadFloat4x4(&m_proj);
 
@@ -121,16 +186,77 @@ void ShapesApp::UpdateMainPassConstantBuffer()
 	currentPassConstantBuffer->CopyData(0, m_mainPassConstantBuffer);
 }
 
+void ShapesApp::BuildConstantBufferViews()
+{
+	UINT objectCBByteSize = Helper::CalculateConstantBufferByteSize(sizeof(ObjectConstants));
+	UINT objectCount = (UINT)m_opaqueRenderItems.size();
+
+	for (int frameIndex = 0; frameIndex < NumFrameResources; ++frameIndex)
+	{
+		auto objectCB = m_frameResources[frameIndex]->objectConstantBuffer->Resource();
+		for (UINT i = 0; i < objectCount; ++i)
+		{
+			D3D12_GPU_VIRTUAL_ADDRESS cbAddress = objectCB->GetGPUVirtualAddress();
+			cbAddress += i * objectCBByteSize;
+
+			int heapIndex = frameIndex * objectCount + i;
+			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_cbvHeap->GetCPUDescriptorHandleForHeapStart());
+			handle.Offset(heapIndex, m_cbvsrvDescriptorSize);
+
+			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+			cbvDesc.BufferLocation = cbAddress;
+			cbvDesc.SizeInBytes = objectCBByteSize;
+
+			m_device->CreateConstantBufferView(&cbvDesc, handle);
+		}
+	}
+
+	UINT passCBByteSize = Helper::CalculateConstantBufferByteSize(sizeof(PassConstants));
+
+	for (int frameIndex = 0; frameIndex < NumFrameResources; ++frameIndex)
+	{
+		auto passCB = m_frameResources[frameIndex]->passConstantBuffer->Resource();
+		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = passCB->GetGPUVirtualAddress();
+
+		int heapIndex = m_passCBVOffset + frameIndex;
+		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_cbvHeap->GetCPUDescriptorHandleForHeapStart());
+		handle.Offset(heapIndex, m_cbvsrvDescriptorSize);
+
+		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+		cbvDesc.BufferLocation = cbAddress;
+		cbvDesc.SizeInBytes = passCBByteSize;
+
+		m_device->CreateConstantBufferView(&cbvDesc, handle);
+	}
+}
+
+void ShapesApp::BuildDescriptorHeaps()
+{
+	UINT objectCount = (UINT)m_opaqueRenderItems.size();
+	UINT numDescriptors = (objectCount + 1) * NumFrameResources;
+
+	m_passCBVOffset = objectCount * NumFrameResources;
+
+	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc;
+	cbvHeapDesc.NumDescriptors = numDescriptors;
+	cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	cbvHeapDesc.NodeMask = 0;
+
+	ThrowIfFailed(m_device->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&m_cbvHeap)));
+}
+
 void ShapesApp::ConfigureRootSignature()
 {
+	// 2개의 Constant buffer가 resource로 들어갈 예정
 	CD3DX12_DESCRIPTOR_RANGE cbvTable0;
-	cbvTable0.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+	cbvTable0.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0); // constant buffer slot register 0
 
 	CD3DX12_DESCRIPTOR_RANGE cbvTable1;
-	cbvTable1.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1);
+	cbvTable1.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1); // constant buffer slot register 1
 
-	CD3DX12_ROOT_PARAMETER slotRootParameters[2];
-
+	// root parameter을 descriptor table로 설정
+	CD3DX12_ROOT_PARAMETER slotRootParameters[2] = {};
 	slotRootParameters[0].InitAsDescriptorTable(1, &cbvTable0);
 	slotRootParameters[1].InitAsDescriptorTable(1, &cbvTable1);
 
@@ -162,7 +288,6 @@ void ShapesApp::BuildShadersAndInputLayout()
 		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA}
 	};
 }
-
 
 void ShapesApp::BuildShapeGeometry()
 {
@@ -362,66 +487,6 @@ void ShapesApp::BuildRenderItems()
 	}
 }
 
-void ShapesApp::BuildDescriptorHeaps()
-{
-	UINT objectCount = (UINT)m_opaqueRenderItems.size();
-	UINT numDescriptors = (objectCount + 1) * NumFrameResources;
-	
-	m_passCBVOffset = objectCount * NumFrameResources;
-
-	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc;
-	cbvHeapDesc.NumDescriptors = numDescriptors;
-	cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	cbvHeapDesc.NodeMask = 0;
-
-	ThrowIfFailed(m_device->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&m_cbvHeap)));
-}
-
-void ShapesApp::BuildConstantBufferViews()
-{
-	UINT objectCBByteSize = Helper::CalculateConstantBufferByteSize(sizeof(ObjectConstants));
-	UINT objectCount = (UINT)m_opaqueRenderItems.size();
-
-	for (int frameIndex = 0; frameIndex < NumFrameResources; ++frameIndex)
-	{
-		auto objectCB = m_frameResources[frameIndex]->objectConstantBuffer->Resource();
-		for (UINT i = 0; i < objectCount; ++i)
-		{
-			D3D12_GPU_VIRTUAL_ADDRESS cbAddress = objectCB->GetGPUVirtualAddress();
-			cbAddress += i * objectCBByteSize;
-
-			int heapIndex = frameIndex * objectCount + i;
-			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_cbvHeap->GetCPUDescriptorHandleForHeapStart());
-			handle.Offset(heapIndex, m_cbvsrvDescriptorSize);
-
-			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-			cbvDesc.BufferLocation = cbAddress;
-			cbvDesc.SizeInBytes = objectCBByteSize;
-
-			m_device->CreateConstantBufferView(&cbvDesc, handle);
-		}
-	}
-
-	UINT passCBByteSize = Helper::CalculateConstantBufferByteSize(sizeof(PassConstants));
-
-	for (int frameIndex = 0; frameIndex < NumFrameResources; ++frameIndex)
-	{
-		auto passCB = m_frameResources[frameIndex]->passConstantBuffer->Resource();
-		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = passCB->GetGPUVirtualAddress();
-
-		int heapIndex = m_passCBVOffset + frameIndex;
-		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_cbvHeap->GetCPUDescriptorHandleForHeapStart());
-		handle.Offset(heapIndex, m_cbvsrvDescriptorSize);
-
-		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-		cbvDesc.BufferLocation = cbAddress;
-		cbvDesc.SizeInBytes = passCBByteSize;
-
-		m_device->CreateConstantBufferView(&cbvDesc, handle);
-	}
-}
-
 void ShapesApp::DrawRenderItems(ID3D12GraphicsCommandList* commandList, const std::vector<RenderItem*>& renderItems)
 {
 	UINT objectCBByteSize = Helper::CalculateConstantBufferByteSize(sizeof(ObjectConstants));
@@ -448,82 +513,6 @@ void ShapesApp::DrawRenderItems(ID3D12GraphicsCommandList* commandList, const st
 		commandList->SetGraphicsRootDescriptorTable(0, cbvHandle);
 		commandList->DrawIndexedInstanced(renderItem->indexCount, 1, renderItem->startIndexLocation, renderItem->baseVertexLocation, 0);
 	}
-}
-
-void ShapesApp::Update()
-{
-	//UpdateCamera();
-
-	// 다음 FrameResource에 접근
-	m_currentFrameResourceIndex = (m_currentFrameResourceIndex + 1) % NumFrameResources;
-	m_currentFrameResource = m_frameResources[m_currentFrameResourceIndex].get();
-
-	// Fence의 값을 보고 현재 GPU가 해당 resource를 가지고 작업 중인지 확인하고, 사용중이라면 기다린다.
-	if (m_currentFrameResource->fence != 0 && m_fence->GetCompletedValue() < m_currentFrameResource->fence)
-	{
-		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
-
-		ThrowIfFailed(m_fence->SetEventOnCompletion(m_currentFrameResource->fence, eventHandle));
-		WaitForSingleObject(eventHandle, INFINITE);
-		CloseHandle(eventHandle);
-	}
-
-	// m_currentFrameResource의 자원들을 갱신한다.
-	UpdateObjectConstantBuffers();
-	UpdateMainPassConstantBuffer();
-}
-
-void ShapesApp::Draw()
-{
-	auto commandAllocator = m_currentFrameResource->commandAllocator;
-
-	ThrowIfFailed(commandAllocator->Reset());
-
-	if (m_IsWireFrame)
-	{
-		ThrowIfFailed(m_commandList->Reset(commandAllocator.Get(), m_PSOs["opaque_wireframe"].Get()));
-	}
-	else
-	{
-		ThrowIfFailed(m_commandList->Reset(commandAllocator.Get(), m_PSOs["opaque"].Get()));
-	}
-
-	m_commandList->RSSetViewports(1, &m_viewport);
-	m_commandList->RSSetScissorRects(1, &m_scissorRect);
-
-	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
-		CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-
-	m_commandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
-	m_commandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-
-	m_commandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
-
-	ID3D12DescriptorHeap* descriptorHeaps[] = { m_cbvHeap.Get() };
-	m_commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-
-	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
-
-	int passCBVIndex = m_passCBVOffset + m_currentFrameResourceIndex;
-	auto passCBVHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_cbvHeap->GetGPUDescriptorHandleForHeapStart());
-	passCBVHandle.Offset(passCBVIndex, m_cbvsrvDescriptorSize);
-	m_commandList->SetGraphicsRootDescriptorTable(1, passCBVHandle);
-
-	DrawRenderItems(m_commandList.Get(), m_opaqueRenderItems);
-
-	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
-
-	ThrowIfFailed(m_commandList->Close());
-
-	ID3D12CommandList* cmdsLists[] = { m_commandList.Get() };
-	m_commandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
-
-	// 후면버퍼와 전면버퍼 교환
-	ThrowIfFailed(m_swapChain->Present(0, 0));
-	m_currentBackBuffer = (m_currentBackBuffer + 1) % SwapChainBufferCount;
-
-	m_currentFrameResource->fence = ++m_currentFence;
-	m_commandQueue->Signal(m_fence.Get(), m_currentFence);
 }
 
 void ShapesApp::BuildPSOs()

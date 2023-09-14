@@ -29,31 +29,30 @@ public:
 
 	virtual bool Initialize() override;
 
-protected:
+private:
+	virtual void Update() override;
+	virtual void Draw() override;
+	virtual void OnResize() override;
+
 	void BuildFrameResources();
 
 	// Constant Buffer °»½Å
 	void UpdateObjectConstantBuffers();
 	void UpdateMainPassConstantBuffer();
 
+	void BuildConstantBufferViews();
+	void BuildDescriptorHeaps();
 	void ConfigureRootSignature();
 	void BuildShadersAndInputLayout();
-	void BuildPSOs();
-
 
 	void BuildShapeGeometry();
 	void BuildRenderItems();
-	void BuildDescriptorHeaps();
-	void BuildConstantBufferViews();
 	void DrawRenderItems(ID3D12GraphicsCommandList* commandList, const std::vector<RenderItem*>& renderItems);
 
-	void UpdateCamera();
-
-	virtual void Update() override;
-	virtual void Draw() override;
-	virtual void OnResize() override;
+	void BuildPSOs();
 
 private:
+	// Camera movement
 	virtual void CameraRotateUp() override;
 	virtual void CameraRotateDown() override;
 	virtual void CameraRotateRight() override;
@@ -93,7 +92,7 @@ protected:
 
 	UINT m_passCBVOffset = 0;
 
-	bool m_IsWireFrame = false;
+	bool m_IsWireFrame = true;
 
 	float m_theta = 1.5f * XM_PI;
 	float m_phi = XM_PIDIV4;
