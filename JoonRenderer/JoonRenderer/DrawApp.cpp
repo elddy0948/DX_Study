@@ -98,10 +98,13 @@ void DrawApp::Draw()
 		true,
 		&DepthStencilView());
 
+	// pipeline에 descriptor table을 묶는다.
+	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 	ID3D12DescriptorHeap* descriptorHeaps[] = { m_constantBufferHeap.Get() };
 	m_commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-
-	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
+	CD3DX12_GPU_DESCRIPTOR_HANDLE cbv(m_constantBufferHeap->GetGPUDescriptorHandleForHeapStart());
+	cbv.Offset(0, m_cbvsrvDescriptorSize);
+	m_commandList->SetGraphicsRootDescriptorTable(0, cbv);
 
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] =
 	{
@@ -113,10 +116,7 @@ void DrawApp::Draw()
 	m_commandList->IASetIndexBuffer(&m_geo->IndexBufferView());
 	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	m_commandList->SetGraphicsRootDescriptorTable(
-		0,
-		m_constantBufferHeap->GetGPUDescriptorHandleForHeapStart()
-	);
+
 
 	/*m_commandList->DrawIndexedInstanced(
 		m_geo->drawArgs["box"].IndexCount,
@@ -204,12 +204,15 @@ void DrawApp::BuildRootSignature()
 {
 	using namespace Microsoft::WRL;
 
+	// 현재 Resource는 Constant buffer 하나이므로 slot register 1개
 	CD3DX12_ROOT_PARAMETER slotRootParameter[1] = {};
 
+	// Root Parameter를 위한 Descriptor Table 생성
 	CD3DX12_DESCRIPTOR_RANGE cbvTable;
-	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);	// constant buffer register 0
 	slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
 
+	// Root signature descriptor 생성
 	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(
 		1, 
 		slotRootParameter,
