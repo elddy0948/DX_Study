@@ -40,10 +40,10 @@ private:
 	virtual void Update() override;
 	virtual void Draw() override;
 
-	virtual void OnLeftKeyDown() override;
-	virtual void OnRightKeyDown() override;
-	virtual void OnUpKeyDown() override;
-	virtual void OnDownKeyDown() override;
+	virtual void CameraRotateUp() override;
+	virtual void CameraRotateDown() override;
+	virtual void CameraRotateRight() override;
+	virtual void CameraRotateLeft() override;
 
 private:
 	void BuildConstantBufferDescriptorHeap();

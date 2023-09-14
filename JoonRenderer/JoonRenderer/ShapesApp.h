@@ -54,10 +54,15 @@ protected:
 	virtual void OnResize() override;
 
 private:
-	virtual void OnLeftKeyDown() override;
-	virtual void OnRightKeyDown() override;
-	virtual void OnUpKeyDown() override;
-	virtual void OnDownKeyDown() override;
+	virtual void CameraRotateUp() override;
+	virtual void CameraRotateDown() override;
+	virtual void CameraRotateRight() override;
+	virtual void CameraRotateLeft() override;
+
+	virtual void MoveForward() override;
+	virtual void MoveBackward() override;
+	virtual void MoveLeft() override;
+	virtual void MoveRight() override;
 
 protected:
 	// For frame resource

@@ -38,10 +38,17 @@ protected:
 	virtual void CreateDescriptorHeaps();
 	virtual void OnResize();
 
-	virtual void OnLeftKeyDown() {}
-	virtual void OnRightKeyDown() {}
-	virtual void OnUpKeyDown() {}
-	virtual void OnDownKeyDown() {}
+	virtual void CameraRotateUp() {}
+	virtual void CameraRotateDown() {}
+	virtual void CameraRotateRight() {}
+	virtual void CameraRotateLeft() {}
+
+	virtual void MoveForward() {}
+	virtual void MoveBackward() {}
+	virtual void MoveLeft() {}
+	virtual void MoveRight() {}
+	virtual void MoveUp() {}
+	virtual void MoveDown() {}
 
 protected:
 	void LoadPipeline();

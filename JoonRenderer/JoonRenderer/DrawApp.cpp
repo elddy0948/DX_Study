@@ -427,25 +427,25 @@ void DrawApp::BuildPSO()
 		IID_PPV_ARGS(&m_pso)));
 }
 
-void DrawApp::OnLeftKeyDown()
+void DrawApp::CameraRotateLeft()
 {
 	float dx = XMConvertToRadians(1.0f);
 	m_theta += dx;
 }
 
-void DrawApp::OnRightKeyDown()
+void DrawApp::CameraRotateRight()
 {
 	float dx = XMConvertToRadians(1.0f);
 	m_theta -= dx;
 }
 
-void DrawApp::OnUpKeyDown()
+void DrawApp::CameraRotateUp()
 {
 	float dy = XMConvertToRadians(1.0f);
 	m_phi += dy;
 }
 
-void DrawApp::OnDownKeyDown()
+void DrawApp::CameraRotateDown()
 {
 	float dy = XMConvertToRadians(1.0f);
 	m_phi -= dy;

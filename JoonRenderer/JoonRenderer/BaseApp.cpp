@@ -143,19 +143,35 @@ LRESULT BaseApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:
 		if (wParam == VK_UP)
 		{
-			OnUpKeyDown();
+			CameraRotateUp();
 		}
 		else if (wParam == VK_LEFT)
 		{
-			OnLeftKeyDown();
+			CameraRotateLeft();
 		}
 		else if (wParam == VK_RIGHT)
 		{
-			OnRightKeyDown();
+			CameraRotateRight();
 		}
 		else if (wParam == VK_DOWN)
 		{
-			OnDownKeyDown();
+			CameraRotateDown();
+		}
+		else if (wParam == 0x57)
+		{
+			MoveForward();
+		}
+		else if (wParam == 0x41)
+		{
+			MoveLeft();
+		}
+		else if (wParam == 0x53)
+		{
+			MoveBackward();
+		}
+		else if (wParam == 0x44)
+		{
+			MoveRight();
 		}
 		return 0;
 	case WM_GETMINMAXINFO:

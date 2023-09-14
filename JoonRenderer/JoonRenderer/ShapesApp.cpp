@@ -82,10 +82,12 @@ void ShapesApp::UpdateCamera()
 	m_eyePos.z = m_radius * cosf(m_phi);
 
 	XMVECTOR pos = XMVectorSet(m_eyePos.x, m_eyePos.y, m_eyePos.z, 1.0f);
-	XMVECTOR target = XMVectorZero();
+	//XMVECTOR target = XMVectorZero();
+	XMVECTOR vCameraTarget = pos * XMVectorSet(1, 0, 1, 1);
 	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
-	XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
+	XMMATRIX view = XMMatrixLookAtLH(pos, vCameraTarget, up);
+	//view *= XMMatrixTranslation(1.0, 0.0f, 0.0f);
 	XMStoreFloat4x4(&m_view, view);
 }
 
@@ -450,7 +452,7 @@ void ShapesApp::DrawRenderItems(ID3D12GraphicsCommandList* commandList, const st
 
 void ShapesApp::Update()
 {
-	UpdateCamera();
+	//UpdateCamera();
 
 	// 다음 FrameResource에 접근
 	m_currentFrameResourceIndex = (m_currentFrameResourceIndex + 1) % NumFrameResources;
@@ -561,27 +563,58 @@ void ShapesApp::BuildPSOs()
 	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&opaqueWireframePSODesc, IID_PPV_ARGS(&m_PSOs["opaque_wireframe"])));
 }
 
-
-void ShapesApp::OnLeftKeyDown()
+void ShapesApp::CameraRotateLeft()
 {
-	float dx = XMConvertToRadians(-1.0f);
-	m_theta += dx;
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixRotationY(0.1f);
+	XMStoreFloat4x4(&m_view, view);
 }
 
-void ShapesApp::OnRightKeyDown()
+void ShapesApp::CameraRotateRight()
 {
-	float dx = XMConvertToRadians(1.0f);
-	m_theta += dx;
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixRotationY(-0.1f);
+	XMStoreFloat4x4(&m_view, view);
 }
 
-void ShapesApp::OnUpKeyDown()
+void ShapesApp::CameraRotateUp()
 {
-	float dy = XMConvertToRadians(1.0f);
-	m_phi += dy;
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixRotationX(0.1f);
+	XMStoreFloat4x4(&m_view, view);
 }
 
-void ShapesApp::OnDownKeyDown()
+void ShapesApp::CameraRotateDown()
 {
-	float dy = XMConvertToRadians(-1.0f);
-	m_phi += dy;
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixRotationX(-0.1f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void ShapesApp::MoveForward() 
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixTranslation(0.0f, 0.0f, -1.0f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void ShapesApp::MoveBackward() 
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixTranslation(0.0f, 0.0f, 1.0f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void ShapesApp::MoveLeft() 
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixTranslation(1.0f, 0.0f, 0.0f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void ShapesApp::MoveRight() 
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixTranslation(-1.0f, 0.0f, 0.0f);
+	XMStoreFloat4x4(&m_view, view);
 }
