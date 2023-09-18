@@ -134,6 +134,7 @@
     <ClCompile Include="GeometryGenerator.cpp" />
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="GameTimer.cpp" />
+    <ClCompile Include="LandAndWavesApp.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ShapesApp.cpp" />
     <ClCompile Include="Win32Application.cpp" />
@@ -146,6 +147,7 @@
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="GeometryGenerator.h" />
     <ClInclude Include="Helper.h" />
+    <ClInclude Include="LandAndWavesApp.h" />
     <ClInclude Include="MeshGeometry.h" />
     <ClInclude Include="RenderItem.h" />
     <ClInclude Include="ShapesApp.h" />
