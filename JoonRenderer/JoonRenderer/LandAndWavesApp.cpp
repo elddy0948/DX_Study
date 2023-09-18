@@ -18,7 +18,7 @@ void LandAndWavesApp::BuildLandGeometry()
 		auto& p = grid.vertices[i].position;
 
 		vertexPositions[i].position = p;
-		vertexPositions[i].position.y = GetHillsHeight(p.x, p.y);
+		vertexPositions[i].position.y = GetHeight(p.x, p.y);
 
 		if (vertexPositions[i].position.y < -10.0f)
 		{
@@ -79,7 +79,7 @@ void LandAndWavesApp::BuildLandGeometry()
 	m_geometries["LandGeo"] = std::move(geo);
 }
 
-float LandAndWavesApp::GetHillsHeight(float x, float z) const
+float LandAndWavesApp::GetHeight(float x, float z) const
 {
 	return 0.3f * (z * sinf(0.1f * x) + x * cosf(0.1f * z));
 }

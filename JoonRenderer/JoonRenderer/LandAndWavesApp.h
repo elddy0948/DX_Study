@@ -27,7 +27,7 @@ public:
 
 private:
 	void BuildLandGeometry();
-	float GetHillsHeight(float x, float z) const;
+	float GetHeight(float x, float z) const;
 
 
 private:
