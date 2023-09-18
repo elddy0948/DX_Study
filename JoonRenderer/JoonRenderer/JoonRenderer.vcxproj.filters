@@ -28,6 +28,18 @@
     <Filter Include="Source Files\Common">
       <UniqueIdentifier>{4320e9e3-39ab-44d4-a3a7-ddcd12c89eb5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Apps\LandAndWavesApp">
+      <UniqueIdentifier>{02fda5f8-f521-4e15-9a0e-7b507f513db2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Apps\ShapesApp">
+      <UniqueIdentifier>{040389a8-4cdb-467b-ba4c-ad12869580a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Apps\LandAndWavesApp">
+      <UniqueIdentifier>{d9671343-144d-465f-a31c-4eb707c641a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Apps\ShapesApp">
+      <UniqueIdentifier>{c6ab02b9-7913-4e85-aace-76af794b224f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -39,16 +51,10 @@
     <ClCompile Include="DrawApp.cpp">
       <Filter>Source Files\Apps</Filter>
     </ClCompile>
-    <ClCompile Include="ShapesApp.cpp">
-      <Filter>Source Files\Apps</Filter>
-    </ClCompile>
     <ClCompile Include="Win32Application.cpp">
       <Filter>Source Files\Apps</Filter>
     </ClCompile>
     <ClCompile Include="DxException.cpp">
-      <Filter>Source Files\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="FrameResource.cpp">
       <Filter>Source Files\Common</Filter>
     </ClCompile>
     <ClCompile Include="GameTimer.cpp">
@@ -61,7 +67,19 @@
       <Filter>Source Files\Common</Filter>
     </ClCompile>
     <ClCompile Include="LandAndWavesApp.cpp">
-      <Filter>Source Files\Apps</Filter>
+      <Filter>Source Files\Apps\LandAndWavesApp</Filter>
+    </ClCompile>
+    <ClCompile Include="Waves.cpp">
+      <Filter>Source Files\Apps\LandAndWavesApp</Filter>
+    </ClCompile>
+    <ClCompile Include="ShapesApp.cpp">
+      <Filter>Source Files\Apps\ShapesApp</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameResource.cpp">
+      <Filter>Source Files\Apps\ShapesApp</Filter>
+    </ClCompile>
+    <ClCompile Include="LAWAppFrameResource.cpp">
+      <Filter>Source Files\Apps\LandAndWavesApp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -69,9 +87,6 @@
       <Filter>Header Files\Apps</Filter>
     </ClInclude>
     <ClInclude Include="DrawApp.h">
-      <Filter>Header Files\Apps</Filter>
-    </ClInclude>
-    <ClInclude Include="ShapesApp.h">
       <Filter>Header Files\Apps</Filter>
     </ClInclude>
     <ClInclude Include="Win32Application.h">
@@ -86,15 +101,6 @@
     <ClInclude Include="Helper.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
-    <ClInclude Include="LandAndWavesApp.h">
-      <Filter>Header Files\Apps</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderItem.h">
-      <Filter>Header Files\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="FrameResource.h">
-      <Filter>Header Files\Common</Filter>
-    </ClInclude>
     <ClInclude Include="GeometryGenerator.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
@@ -106,6 +112,27 @@
     </ClInclude>
     <ClInclude Include="UploadBuffer.h">
       <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="LandAndWavesApp.h">
+      <Filter>Header Files\Apps\LandAndWavesApp</Filter>
+    </ClInclude>
+    <ClInclude Include="LAWAppFrameResource.h">
+      <Filter>Header Files\Apps\LandAndWavesApp</Filter>
+    </ClInclude>
+    <ClInclude Include="LAWAppRenderItem.h">
+      <Filter>Header Files\Apps\LandAndWavesApp</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapesApp.h">
+      <Filter>Header Files\Apps\ShapesApp</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderItem.h">
+      <Filter>Header Files\Apps\ShapesApp</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameResource.h">
+      <Filter>Header Files\Apps\ShapesApp</Filter>
+    </ClInclude>
+    <ClInclude Include="Waves.h">
+      <Filter>Header Files\Apps\LandAndWavesApp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

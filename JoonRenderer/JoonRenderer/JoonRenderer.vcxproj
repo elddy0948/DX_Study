@@ -135,8 +135,10 @@
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="LandAndWavesApp.cpp" />
+    <ClCompile Include="LAWAppFrameResource.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ShapesApp.cpp" />
+    <ClCompile Include="Waves.cpp" />
     <ClCompile Include="Win32Application.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -148,11 +150,14 @@
     <ClInclude Include="GeometryGenerator.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="LandAndWavesApp.h" />
+    <ClInclude Include="LAWAppFrameResource.h" />
+    <ClInclude Include="LAWAppRenderItem.h" />
     <ClInclude Include="MeshGeometry.h" />
     <ClInclude Include="RenderItem.h" />
     <ClInclude Include="ShapesApp.h" />
     <ClInclude Include="SubmeshGeometry.h" />
     <ClInclude Include="UploadBuffer.h" />
+    <ClInclude Include="Waves.h" />
     <ClInclude Include="Win32Application.h" />
   </ItemGroup>
   <ItemGroup>

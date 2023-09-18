@@ -4,6 +4,27 @@ LandAndWavesApp::LandAndWavesApp(HINSTANCE hInstance) : BaseApp(hInstance) {}
 
 LandAndWavesApp::~LandAndWavesApp() { BaseApp::~BaseApp(); }
 
+void LandAndWavesApp::Draw()
+{
+	// ...
+
+	auto passCB = m_currentFrameResource->passConstantBuffer->Resource();
+	m_commandList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
+	DrawRenderItems(m_commandList.Get(), m_opaqueRenderItems);
+	
+	// ...
+}
+
+void LandAndWavesApp::ConfigureRootSignature()
+{
+	CD3DX12_ROOT_PARAMETER rootParameterSlots[2] = {};
+	rootParameterSlots[0].InitAsConstantBufferView(0); // object cb
+	rootParameterSlots[1].InitAsConstantBufferView(1); // pass cb
+
+	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(2, rootParameterSlots, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+}
+
+
 void LandAndWavesApp::BuildLandGeometry()
 {
 	GeometryGenerator geoGen;
@@ -79,7 +100,84 @@ void LandAndWavesApp::BuildLandGeometry()
 	m_geometries["LandGeo"] = std::move(geo);
 }
 
+void LandAndWavesApp::DrawRenderItems(ID3D12GraphicsCommandList* commandList, const std::vector<LAWAppRenderItem*>& renderItems)
+{
+	UINT objectCBByteSize = Helper::CalculateConstantBufferByteSize(sizeof(ObjectConstants));
+	auto objectCB = m_currentFrameResource->objectConstantBuffer->Resource();
+
+	for (size_t i = 0; i < renderItems.size(); ++i)
+	{
+		auto renderItem = renderItems[i];
+
+		D3D12_VERTEX_BUFFER_VIEW vbv[] =
+		{
+			renderItem->geo->VertexPositionBufferView(),
+			renderItem->geo->VertexColorBufferView()
+		};
+		commandList->IASetVertexBuffers(0, 2, vbv);
+		commandList->IASetIndexBuffer(&renderItem->geo->IndexBufferView());
+		commandList->IASetPrimitiveTopology(renderItem->primitiveType);
+
+		D3D12_GPU_VIRTUAL_ADDRESS objectCBAddress = objectCB->GetGPUVirtualAddress();
+		objectCBAddress += renderItem->objectConstantBufferIndex * objectCBByteSize;
+		commandList->SetGraphicsRootConstantBufferView(0, objectCBAddress);
+		commandList->DrawIndexedInstanced(renderItem->indexCount, 1, renderItem->startIndexLocation, renderItem->baseVertexLocation, 0);
+	}
+}
+
+void LandAndWavesApp::UpdateWaves()
+{
+	static float t_base = 0.0f;
+
+	if ((Win32Application::GetTimer().GameTime() - t_base) >= 0.25f)
+	{
+		t_base += 0.25f;
+
+		int i = Rand(4, m_waves->RowCount() - 5);
+		int j = Rand(4, m_waves->ColumnCount() - 5);
+
+		float r = RandF(0.2f, 0.5f);
+
+		m_waves->Disturb(i, j, r);
+	}
+
+	m_waves->Update(Win32Application::GetTimer().DeltaTime());
+
+	auto currentWavesVPB = m_currentFrameResource->vertexPositionBuffer.get();
+	auto currentWavesVCB = m_currentFrameResource->vertexColorBuffer.get();
+
+	for (int i = 0; i < m_waves->VertexCount(); ++i)
+	{
+		VertexPositionData vp;
+		VertexColorData vc;
+
+		vp.position = m_waves->Position(i);
+		vc.color = XMFLOAT4(DirectX::Colors::Blue);
+
+		currentWavesVPB->CopyData(i, vp);
+		currentWavesVCB->CopyData(i, vc);
+	}
+
+	m_wavesRenderItem->geo->vPosBufferGPU = currentWavesVPB->Resource();
+	m_wavesRenderItem->geo->vColorBufferGPU = currentWavesVCB->Resource();
+}
+
 float LandAndWavesApp::GetHeight(float x, float z) const
 {
 	return 0.3f * (z * sinf(0.1f * x) + x * cosf(0.1f * z));
+}
+
+int LandAndWavesApp::Rand(int a, int b)
+{
+	return a + rand() % ((b - a) + 1);
+}
+
+float LandAndWavesApp::RandF()
+{
+	return (float)(rand()) / (float)RAND_MAX;
+}
+
+float LandAndWavesApp::RandF(float a, float b)
+{
+	return a + RandF() * (b - a);
 }

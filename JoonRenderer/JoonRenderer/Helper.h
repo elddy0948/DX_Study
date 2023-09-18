@@ -11,6 +11,7 @@
 #include <d3dcompiler.h>
 #include <fstream>
 #include <DirectXMath.h>
+#include <DirectXColors.h>
 #include <vector>
 #include <unordered_map>
 #include <utility>
