@@ -44,6 +44,17 @@ private:
 	int Rand(int a, int b);
 	float RandF();
 	float RandF(float a, float b);
+
+private:
+	virtual void CameraRotateUp() override;
+	virtual void CameraRotateDown() override;
+	virtual void CameraRotateRight() override;
+	virtual void CameraRotateLeft() override;
+
+	virtual void MoveForward() override;
+	virtual void MoveBackward() override;
+	virtual void MoveLeft() override;
+	virtual void MoveRight() override;
 	
 private:
 	std::vector<std::unique_ptr<LAWAppFrameResource>> m_frameResources;

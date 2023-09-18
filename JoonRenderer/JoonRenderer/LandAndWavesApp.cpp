@@ -469,3 +469,59 @@ float LandAndWavesApp::RandF(float a, float b)
 {
 	return a + RandF() * (b - a);
 }
+
+void LandAndWavesApp::CameraRotateLeft()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixRotationY(0.1f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void LandAndWavesApp::CameraRotateRight()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixRotationY(-0.1f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void LandAndWavesApp::CameraRotateUp()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixRotationX(0.1f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void LandAndWavesApp::CameraRotateDown()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixRotationX(-0.1f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void LandAndWavesApp::MoveForward()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixTranslation(0.0f, 0.0f, -1.0f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void LandAndWavesApp::MoveBackward()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixTranslation(0.0f, 0.0f, 1.0f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void LandAndWavesApp::MoveLeft()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixTranslation(1.0f, 0.0f, 0.0f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void LandAndWavesApp::MoveRight()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixTranslation(-1.0f, 0.0f, 0.0f);
+	XMStoreFloat4x4(&m_view, view);
+}
