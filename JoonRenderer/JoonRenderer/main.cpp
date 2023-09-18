@@ -2,7 +2,7 @@
 #include <crtdbg.h>
 
 #include "Helper.h"
-#include "ShapesApp.h"
+#include "LandAndWavesApp.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int showCmd)
 {
@@ -12,7 +12,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
 	try
 	{
-		ShapesApp app(hInstance);
+		LandAndWavesApp app(hInstance);
 
 		return Win32Application::Run(&app);
 	}

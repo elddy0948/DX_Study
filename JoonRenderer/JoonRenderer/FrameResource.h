@@ -2,7 +2,7 @@
 
 #include "UploadBuffer.h"
 
-static const int NumFrameResources = 3;
+const int NumFrameResources = 3;
 
 struct PassConstants
 {
