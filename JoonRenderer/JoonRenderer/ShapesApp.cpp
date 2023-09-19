@@ -295,7 +295,8 @@ void ShapesApp::BuildShapeGeometry()
 
 	GeometryGenerator::MeshData box = geoGenerator.CreateBox(1.5f, 0.5f, 1.5f, 3);
 	GeometryGenerator::MeshData grid = geoGenerator.CreateGrid(20.0f, 30.0f, 60, 40);
-	GeometryGenerator::MeshData sphere = geoGenerator.CreateSphere(0.5f, 20, 20);
+	//GeometryGenerator::MeshData sphere = geoGenerator.CreateSphere(0.5f, 20, 20);
+	GeometryGenerator::MeshData sphere = geoGenerator.CreateGeoSphere(0.5f, 3);
 	GeometryGenerator::MeshData cylinder = geoGenerator.CreateCylinder(0.5f, 0.3f, 3.0f, 20, 20);
 
 	UINT boxVertexOffset = 0;
