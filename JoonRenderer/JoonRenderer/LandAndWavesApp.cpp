@@ -134,7 +134,7 @@ void LandAndWavesApp::Draw()
 
 	ThrowIfFailed(m_commandList->Close());
 
-	ID3D12CommandList* cmdsLists[] = { m_commandList.Get() };
+	ID3D12CommandList* cmdsLists[] = { m_commandList.Get() }; 
 	m_commandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
 	ThrowIfFailed(m_swapChain->Present(0, 0));
@@ -170,7 +170,7 @@ void LandAndWavesApp::BuildRenderItems()
 
 	auto landRenderItem = std::make_unique<LAWAppRenderItem>();
 	landRenderItem->inWorldSpace = Identity4x4;
-	landRenderItem->objectConstantBufferIndex = 0;
+	landRenderItem->objectConstantBufferIndex = 1;
 	landRenderItem->geo = m_geometries["LandGeo"].get();
 	landRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	landRenderItem->indexCount = landRenderItem->geo->drawArgs["grid"].IndexCount;
@@ -205,12 +205,12 @@ void LandAndWavesApp::ConfigureRootSignature()
 
 void LandAndWavesApp::BuildShadersAndInputLayout()
 {
-	m_shaders["VS"] = Helper::CompileShader(L"ShapesVS.hlsl", nullptr, "main", "vs_5_1");
-	m_shaders["PS"] = Helper::CompileShader(L"ShapesPS.hlsl", nullptr, "main", "ps_5_1");
+	m_shaders["VS"] = Helper::CompileShader(L"LAW_VS.hlsl", nullptr, "main", "vs_5_0");
+	m_shaders["PS"] = Helper::CompileShader(L"LAW_PS.hlsl", nullptr, "main", "ps_5_0");
 	m_inputLayout =
 	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA},
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA}
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
 	};
 }
 
@@ -228,7 +228,7 @@ void LandAndWavesApp::BuildLandGeometry()
 		auto& p = grid.vertices[i].position;
 
 		vertexPositions[i].position = p;
-		vertexPositions[i].position.y = GetHeight(p.x, p.y);
+		vertexPositions[i].position.y = GetHeight(p.x, p.z);
 
 		if (vertexPositions[i].position.y < -10.0f)
 		{
@@ -239,6 +239,10 @@ void LandAndWavesApp::BuildLandGeometry()
 			vertexColors[i].color = XMFLOAT4(0.48f, 0.77f, 0.46f, 1.0f);
 		}
 		else if (vertexPositions[i].position.y < 12.0f)
+		{
+			vertexColors[i].color = XMFLOAT4(0.1f, 0.48f, 0.19f, 1.0f);
+		}
+		else if (vertexPositions[i].position.y < 20.0f)
 		{
 			vertexColors[i].color = XMFLOAT4(0.45f, 0.39f, 0.34f, 1.0f);
 		}
@@ -432,7 +436,6 @@ void LandAndWavesApp::BuildPSOs()
 	};
 
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	psoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	psoDesc.SampleMask = UINT_MAX;

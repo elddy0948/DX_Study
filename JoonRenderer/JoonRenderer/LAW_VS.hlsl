@@ -22,27 +22,28 @@ cbuffer cbPass : register(b1)
     float deltaTime;
 };
 
-struct VertexIn
+struct VPos
 {
-    float3 posLocal : POSITION;
-    float4 color : COLOR;
+    float3 PosL : POSITION;
+};
+
+struct VColor
+{
+    float4 Color : COLOR;
 };
 
 struct VertexOut
 {
-    float4 posHomog : SV_Position;
-    float4 color : COLOR;
+    float4 PosH : SV_Position;
+    float4 Color : COLOR;
 };
 
-
-VertexOut main(VertexIn vin)
+VertexOut main(VPos vpos_in, VColor vcolor_in)
 {
     VertexOut vout;
     
-    float4 posWorld = mul(float4(vin.posLocal, 1.0f), world);
-    
-    vout.posHomog = mul(posWorld, viewProj);
-    vout.color = vin.color;
-    
+    float4 PosW = mul(float4(vpos_in.PosL, 1.0f), world);
+    vout.PosH = mul(PosW, viewProj);
+    vout.Color = vcolor_in.Color;
     return vout;
 }
