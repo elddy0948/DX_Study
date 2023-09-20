@@ -44,6 +44,33 @@ void LitWavesApp::UpdateMaterialConstantBuffers()
 	}
 }
 
+void LitWavesApp::DrawRenderItems(ID3D12GraphicsCommandList* commandList, const std::vector<RenderItem*>& renderItems)
+{
+	UINT objectCBByteSize = Helper::CalculateConstantBufferByteSize(sizeof(ObjectConstants));
+	UINT matCBByteSize = Helper::CalculateConstantBufferByteSize(sizeof(MaterialConstants));
+
+	auto objectCB = m_currentFrameResource->ObjectConstantsBuffer->Resource();
+	auto matCB = m_currentFrameResource->MaterialConstantsBuffer->Resource();
+
+	for (size_t i = 0; i < renderItems.size(); ++i)
+	{
+		auto renderItem = renderItems[i];
+
+		commandList->IASetVertexBuffers(0, 1, &renderItem->Geo->VertexBufferView());
+		commandList->IASetIndexBuffer(&renderItem->Geo->IndexBufferView());
+		commandList->IASetPrimitiveTopology(renderItem->PrimitiveType);
+
+		D3D12_GPU_VIRTUAL_ADDRESS objectCBAddress = objectCB->GetGPUVirtualAddress() + renderItem->ObjectConstantsBufferIndex * objectCBByteSize;
+		D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() + renderItem->Material->ConstantBufferIndex * matCBByteSize;
+
+		commandList->SetGraphicsRootConstantBufferView(0, objectCBAddress);
+		commandList->SetGraphicsRootConstantBufferView(1, matCBAddress);
+
+		commandList->DrawIndexedInstanced(renderItem->IndexCount, 1, renderItem->StartIndexLocation, renderItem->BaseVertexLocation, 0);
+	}
+}
+
+
 void LitWavesApp::BuildMaterials()
 {
 	auto grass = std::make_unique<Material>();
