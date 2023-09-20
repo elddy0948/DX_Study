@@ -4,6 +4,7 @@
 #include "BaseApp.h"
 #include "JRMath.h"
 #include "Material.h"
+#include "MeshGeometry.h"
 #include "UploadBuffer.h"
 
 struct ObjectConstants
@@ -43,6 +44,7 @@ struct MaterialConstants
 	DirectX::XMFLOAT4X4 MaterialTransform = JRMath::Identity4x4();
 };
 
+// Frame Resource
 struct FrameResource
 {
 public:
@@ -60,6 +62,26 @@ public:
 	std::unique_ptr<UploadBuffer<MaterialConstants>> MaterialConstantsBuffer = nullptr;
 
 	UINT64 fence = 0;
+};
+
+struct RenderItem
+{
+public:
+	RenderItem() = default;
+
+	DirectX::XMFLOAT4X4 World = JRMath::Identity4x4();
+
+	int ConstantsBufferChangedFlag = NumFrameResource;
+	UINT ObjectConstantsBufferIndex = -1;
+
+	MeshGeometry* Geo = nullptr;
+	Material* Material = nullptr;
+
+	D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	UINT IndexCount = 0;
+	UINT StartIndexLocation = 0;
+	int BaseVertexLocation = 0;
 };
 
 class LitWavesApp : public BaseApp
