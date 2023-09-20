@@ -5,6 +5,7 @@
 #include "FrameResource.h"
 #include "RenderItem.h"
 #include "GeometryGenerator.h"
+#include "JRMath.h"
 
 using namespace Microsoft::WRL;
 using namespace DirectX;
@@ -78,8 +79,8 @@ protected:
 
 	PassConstants m_mainPassConstantBuffer;
 
-	XMFLOAT4X4 m_view = Identity4x4;
-	XMFLOAT4X4 m_proj = Identity4x4;
+	XMFLOAT4X4 m_view = JRMath::Identity4x4();
+	XMFLOAT4X4 m_proj = JRMath::Identity4x4();
 	XMFLOAT3 m_eyePos = { 0.0f, 0.0f, 0.0f };
 
 	std::unordered_map<std::string, std::unique_ptr<MeshGeometry>> m_geometries;

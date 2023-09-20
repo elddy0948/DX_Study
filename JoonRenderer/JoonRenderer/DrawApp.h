@@ -8,12 +8,13 @@
 #include "BaseApp.h"
 #include "UploadBuffer.h"
 #include "MeshGeometry.h"
+#include "JRMath.h"
 
 using namespace DirectX;
 
 struct ObjectConstants
 {
-	XMFLOAT4X4 WorldViewProj = Identity4x4;
+	XMFLOAT4X4 WorldViewProj = JRMath::Identity4x4();
 	float gTime = 0.0f;
 };
 
@@ -74,7 +75,7 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pso = nullptr;
 
-	XMFLOAT4X4 m_world = Identity4x4;
-	XMFLOAT4X4 m_view = Identity4x4;
-	XMFLOAT4X4 m_proj = Identity4x4;
+	XMFLOAT4X4 m_world = JRMath::Identity4x4();
+	XMFLOAT4X4 m_view = JRMath::Identity4x4();
+	XMFLOAT4X4 m_proj = JRMath::Identity4x4();
 };

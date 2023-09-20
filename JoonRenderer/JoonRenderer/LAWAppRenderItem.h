@@ -2,12 +2,13 @@
 
 #include "LAWAppFrameResource.h"
 #include "MeshGeometry.h"
+#include "JRMath.h"
 
 struct LAWAppRenderItem
 {
 	LAWAppRenderItem() = default;
 
-	XMFLOAT4X4 inWorldSpace = Identity4x4;
+	XMFLOAT4X4 inWorldSpace = JRMath::Identity4x4();
 
 	int constantBufferChangeFlag = NumFrameResources;
 

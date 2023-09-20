@@ -3,6 +3,7 @@
 #include "Helper.h"
 #include "MeshGeometry.h"
 #include "FrameResource.h"
+#include "JRMath.h"
 
 using namespace DirectX;
 
@@ -10,7 +11,7 @@ struct RenderItem
 {
 	RenderItem() = default;
 
-	XMFLOAT4X4 inWorldSpace = Identity4x4;
+	XMFLOAT4X4 inWorldSpace = JRMath::Identity4x4();
 
 	int constantBufferChangeFlag = NumFrameResources;
 

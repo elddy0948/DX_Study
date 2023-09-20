@@ -2,6 +2,7 @@
 
 #include "BaseApp.h"
 #include "Helper.h"
+#include "JRMath.h"
 #include "GeometryGenerator.h"
 #include "LAWAppRenderItem.h"
 #include "Waves.h"
@@ -80,8 +81,8 @@ private:
 
 	std::unique_ptr<Waves> m_waves;
 
-	XMFLOAT4X4 m_view = Identity4x4;
-	XMFLOAT4X4 m_proj = Identity4x4;
+	XMFLOAT4X4 m_view = JRMath::Identity4x4();
+	XMFLOAT4X4 m_proj = JRMath::Identity4x4();
 	XMFLOAT3 m_eyePosition = { 0.0f, 0.0f, 0.0f };
 
 	float m_theta = 1.5f * XM_PI;

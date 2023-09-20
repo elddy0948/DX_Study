@@ -40,18 +40,15 @@
     <Filter Include="Source Files\Apps\ShapesApp">
       <UniqueIdentifier>{c6ab02b9-7913-4e85-aace-76af794b224f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Apps\Base">
+      <UniqueIdentifier>{4362d0c1-9328-4128-9f33-ea02a8403399}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BaseApp.cpp">
-      <Filter>Source Files\Apps</Filter>
-    </ClCompile>
     <ClCompile Include="DrawApp.cpp">
-      <Filter>Source Files\Apps</Filter>
-    </ClCompile>
-    <ClCompile Include="Win32Application.cpp">
       <Filter>Source Files\Apps</Filter>
     </ClCompile>
     <ClCompile Include="DxException.cpp">
@@ -80,6 +77,12 @@
     </ClCompile>
     <ClCompile Include="LAWAppFrameResource.cpp">
       <Filter>Source Files\Apps\LandAndWavesApp</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32Application.cpp">
+      <Filter>Source Files\Apps\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseApp.cpp">
+      <Filter>Source Files\Apps\Base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -133,6 +136,9 @@
     </ClInclude>
     <ClInclude Include="Waves.h">
       <Filter>Header Files\Apps\LandAndWavesApp</Filter>
+    </ClInclude>
+    <ClInclude Include="JRMath.h">
+      <Filter>Header Files\Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

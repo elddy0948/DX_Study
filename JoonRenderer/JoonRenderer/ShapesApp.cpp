@@ -419,7 +419,7 @@ void ShapesApp::BuildRenderItems()
 	m_allRenderItems.push_back(std::move(boxRenderItem));
 
 	auto gridRenderItem = std::make_unique<RenderItem>();
-	gridRenderItem->inWorldSpace = Identity4x4;
+	gridRenderItem->inWorldSpace = JRMath::Identity4x4();
 	gridRenderItem->objectConstantBufferIndex = 1;
 	gridRenderItem->geo = m_geometries["ShapeGeo"].get();
 	gridRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;

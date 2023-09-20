@@ -149,6 +149,7 @@
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="GeometryGenerator.h" />
     <ClInclude Include="Helper.h" />
+    <ClInclude Include="JRMath.h" />
     <ClInclude Include="LandAndWavesApp.h" />
     <ClInclude Include="LAWAppFrameResource.h" />
     <ClInclude Include="LAWAppRenderItem.h" />

@@ -156,7 +156,7 @@ void LandAndWavesApp::BuildFrameResources()
 void LandAndWavesApp::BuildRenderItems()
 {
 	auto waveRenderItem = std::make_unique<LAWAppRenderItem>();
-	waveRenderItem->inWorldSpace = Identity4x4;
+	waveRenderItem->inWorldSpace = JRMath::Identity4x4();
 	waveRenderItem->objectConstantBufferIndex = 0;
 	waveRenderItem->geo = m_geometries["WaveGeo"].get();
 	waveRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -169,7 +169,7 @@ void LandAndWavesApp::BuildRenderItems()
 	m_allRenderItems.push_back(std::move(waveRenderItem));
 
 	auto landRenderItem = std::make_unique<LAWAppRenderItem>();
-	landRenderItem->inWorldSpace = Identity4x4;
+	landRenderItem->inWorldSpace = JRMath::Identity4x4();
 	landRenderItem->objectConstantBufferIndex = 1;
 	landRenderItem->geo = m_geometries["LandGeo"].get();
 	landRenderItem->primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
