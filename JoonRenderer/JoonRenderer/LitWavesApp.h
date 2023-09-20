@@ -8,17 +8,32 @@
 
 struct ObjectConstants
 {
-
+	DirectX::XMFLOAT4X4 world;
 };
 
 struct PassConstants
 {
+	DirectX::XMFLOAT4X4 view;
+	DirectX::XMFLOAT4X4 invView;
+	DirectX::XMFLOAT4X4 proj;
+	DirectX::XMFLOAT4X4 invProj;
+	DirectX::XMFLOAT4X4 viewProj;
+	DirectX::XMFLOAT4X4 invViewProj;
+	DirectX::
+	DirectX::XMFLOAT3 eyePos;
+	DirectX::XMFLOAT2 renderTargetSize;
+	DirectX::XMFLOAT2 invRenderTargetSize;
 
+	float nearZ;
+	float farZ;
+	float totalTime;
+	float deltaTime;
 };
 
 struct Vertex
 {
-
+	DirectX::XMFLOAT3 Position;
+	DirectX::XMFLOAT4 Color;
 };
 
 struct MaterialConstants
