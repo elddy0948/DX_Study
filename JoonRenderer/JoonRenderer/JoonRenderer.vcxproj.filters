@@ -43,6 +43,15 @@
     <Filter Include="Source Files\Apps\Base">
       <UniqueIdentifier>{4362d0c1-9328-4128-9f33-ea02a8403399}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Apps\Base">
+      <UniqueIdentifier>{ba50637b-0203-44ca-aa87-7bd20be534d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Apps\LitWavesApp">
+      <UniqueIdentifier>{f07c52ec-bec1-488f-9d29-986530edb366}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Apps\LitWavesApp">
+      <UniqueIdentifier>{7295b255-3c6b-443d-b372-1bb38d2918c7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -84,15 +93,12 @@
     <ClCompile Include="BaseApp.cpp">
       <Filter>Source Files\Apps\Base</Filter>
     </ClCompile>
+    <ClCompile Include="LitWavesApp.cpp">
+      <Filter>Source Files\Apps\LitWavesApp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BaseApp.h">
-      <Filter>Header Files\Apps</Filter>
-    </ClInclude>
     <ClInclude Include="DrawApp.h">
-      <Filter>Header Files\Apps</Filter>
-    </ClInclude>
-    <ClInclude Include="Win32Application.h">
       <Filter>Header Files\Apps</Filter>
     </ClInclude>
     <ClInclude Include="DxException.h">
@@ -139,6 +145,18 @@
     </ClInclude>
     <ClInclude Include="JRMath.h">
       <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseApp.h">
+      <Filter>Header Files\Apps\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Win32Application.h">
+      <Filter>Header Files\Apps\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="LitWavesApp.h">
+      <Filter>Header Files\Apps\LitWavesApp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

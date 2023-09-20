@@ -69,11 +69,15 @@ public:
 	LitWavesApp(const LitWavesApp& rhs) = delete;
 	LitWavesApp& operator=(const LitWavesApp& rhs) = delete;
 	~LitWavesApp();
-	
+
+protected:
+	void UpdateMaterialConstantBuffers();
 
 private:
 	void BuildMaterials();
 
 private:
+	FrameResource* m_currentFrameResource = nullptr;
+
 	std::unordered_map<std::string, std::unique_ptr<Material>> m_materials;
 };

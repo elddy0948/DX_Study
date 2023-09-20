@@ -20,6 +20,30 @@ LitWavesApp::~LitWavesApp()
 	BaseApp::~BaseApp();
 }
 
+void LitWavesApp::UpdateMaterialConstantBuffers()
+{
+	auto currentMaterialCB = m_currentFrameResource->MaterialConstantsBuffer.get();
+
+	for (auto& material : m_materials)
+	{
+		Material* mat = material.second.get();
+
+		if (mat->NumFramesDirty > 0)
+		{
+			XMMATRIX materialTransform = XMLoadFloat4x4(&mat->MaterialTransform);
+
+			MaterialConstants materialConstants;
+			materialConstants.DiffuseAlbedo = mat->DiffuseAlbedo;
+			materialConstants.FresnelR0 = mat->FresnelR0;
+			materialConstants.Roughness = mat->Roughness;
+
+			currentMaterialCB->CopyData(mat->ConstantBufferIndex, materialConstants);
+
+			mat->NumFramesDirty--;
+		}
+	}
+}
+
 void LitWavesApp::BuildMaterials()
 {
 	auto grass = std::make_unique<Material>();

@@ -136,6 +136,7 @@
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="LandAndWavesApp.cpp" />
     <ClCompile Include="LAWAppFrameResource.cpp" />
+    <ClCompile Include="LitWavesApp.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ShapesApp.cpp" />
     <ClCompile Include="Waves.cpp" />
@@ -153,6 +154,8 @@
     <ClInclude Include="LandAndWavesApp.h" />
     <ClInclude Include="LAWAppFrameResource.h" />
     <ClInclude Include="LAWAppRenderItem.h" />
+    <ClInclude Include="LitWavesApp.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="MeshGeometry.h" />
     <ClInclude Include="RenderItem.h" />
     <ClInclude Include="ShapesApp.h" />
