@@ -19,7 +19,6 @@ struct PassConstants
 	DirectX::XMFLOAT4X4 invProj;
 	DirectX::XMFLOAT4X4 viewProj;
 	DirectX::XMFLOAT4X4 invViewProj;
-	DirectX::
 	DirectX::XMFLOAT3 eyePos;
 	DirectX::XMFLOAT2 renderTargetSize;
 	DirectX::XMFLOAT2 invRenderTargetSize;
