@@ -42,3 +42,55 @@ float3 BlinnPhong(float3 lightStrength, float3 lightVec, float3 normal, float3 t
     
     return (mat.DiffuseAlbedo.rgb + specAlbedo) * lightStrength;
 }
+
+float3 ComputeDirectionalLight(Light L, Material mat, float3 normal, float3 toEye)
+{
+    float3 lightVec = -L.Direction;
+    float ndotl = max(dot(lightVec, normal), 0.0f);
+    float3 lightStrength = L.Strength * ndotl;
+
+    return BlinnPhong(lightStrength, lightVec, normal, toEye, mat);
+}
+
+float3 ComputePointLight(Light L, Material mat, float3 pos, float3 normal, float3 toEye)
+{
+    float3 lightVec = L.Position - pos;
+    float d = length(lightVec);
+
+    if (d > L.FalloffEnd)
+    {
+        return 0.0f;
+    }
+    
+    lightVec /= d;
+    
+    float ndotl = max(dot(lightVec, normal), 0.0f);
+    float3 lightStrength = L.Strength * ndotl;
+    
+    float att = CalcAttenuation(d, L.FalloffStart, L.FalloffEnd);
+    lightStrength *= att;
+    
+    return BlinnPhong(lightStrength, lightVec, normal, toEye, mat);
+}
+
+float3 ComputeSpotLight(Light L, Material mat, float3 pos, float3 normal, float3 toEye)
+{
+    float3 lightVec = L.Position - pos;
+    float d = length(lightVec);
+    
+    if (d > L.FalloffEnd)
+        return 0.0f;
+    
+    lightVec /= d;
+    
+    float ndotl = max(dot(lightVec, normal), 0.0f);
+    float3 lightStrength = L.Strength * ndotl;
+    
+    float att = CalcAttenuation(d, L.FalloffStart, L.FalloffEnd);
+    lightStrength *= att;
+    
+    float spotFactor = pow(max(dot(-lightVec, L.Direction), 0.0f), L.SpotPower);
+    lightStrength *= spotFactor;
+    
+    return BlinnPhong(lightStrength, lightVec, normal, toEye, mat);
+}
