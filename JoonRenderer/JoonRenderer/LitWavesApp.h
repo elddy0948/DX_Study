@@ -131,6 +131,16 @@ public:
 	int BaseVertexLocation = 0;
 };
 
+struct Light
+{
+	DirectX::XMFLOAT3 Strength;
+	float FalloffStart;
+	DirectX::XMFLOAT3 Direction;
+	float FalloffEnd;
+	DirectX::XMFLOAT3 Position;
+	float SpotPower;
+};
+
 class LitWavesApp : public BaseApp
 {
 public:
