@@ -75,9 +75,6 @@
     <ClCompile Include="LandAndWavesApp.cpp">
       <Filter>Source Files\Apps\LandAndWavesApp</Filter>
     </ClCompile>
-    <ClCompile Include="Waves.cpp">
-      <Filter>Source Files\Apps\LandAndWavesApp</Filter>
-    </ClCompile>
     <ClCompile Include="ShapesApp.cpp">
       <Filter>Source Files\Apps\ShapesApp</Filter>
     </ClCompile>
@@ -94,6 +91,9 @@
       <Filter>Source Files\Apps\Base</Filter>
     </ClCompile>
     <ClCompile Include="LitWavesApp.cpp">
+      <Filter>Source Files\Apps\LitWavesApp</Filter>
+    </ClCompile>
+    <ClCompile Include="Waves.cpp">
       <Filter>Source Files\Apps\LitWavesApp</Filter>
     </ClCompile>
   </ItemGroup>
@@ -140,9 +140,6 @@
     <ClInclude Include="FrameResource.h">
       <Filter>Header Files\Apps\ShapesApp</Filter>
     </ClInclude>
-    <ClInclude Include="Waves.h">
-      <Filter>Header Files\Apps\LandAndWavesApp</Filter>
-    </ClInclude>
     <ClInclude Include="JRMath.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
@@ -157,6 +154,15 @@
     </ClInclude>
     <ClInclude Include="LitWavesApp.h">
       <Filter>Header Files\Apps\LitWavesApp</Filter>
+    </ClInclude>
+    <ClInclude Include="Waves.h">
+      <Filter>Header Files\Apps\LitWavesApp</Filter>
+    </ClInclude>
+    <ClInclude Include="LitMeshGeometry.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="LitSubmeshGeometry.h">
+      <Filter>Header Files\Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -178,5 +184,16 @@
     <FxCompile Include="LAW_PS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="LitWavesVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="LitWavesPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="LightingUtils.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

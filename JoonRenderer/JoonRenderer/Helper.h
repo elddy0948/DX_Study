@@ -15,6 +15,7 @@
 #include <vector>
 #include <unordered_map>
 #include <utility>
+#include <DirectXCollision.h>
 
 #include "DxException.h"
 

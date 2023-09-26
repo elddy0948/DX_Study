@@ -5,7 +5,22 @@
 #include "JRMath.h"
 #include "Material.h"
 #include "UploadBuffer.h"
-#include "SubmeshGeometry.h"
+#include "Waves.h"
+#include "GeometryGenerator.h"
+
+#include "LitMeshGeometry.h"
+
+#define MaxLights 16
+
+struct Light
+{
+	DirectX::XMFLOAT3 Strength;
+	float FalloffStart;
+	DirectX::XMFLOAT3 Direction;
+	float FalloffEnd;
+	DirectX::XMFLOAT3 Position;
+	float SpotPower;
+};
 
 struct ObjectConstants
 {
@@ -28,12 +43,16 @@ struct PassConstants
 	float farZ;
 	float totalTime;
 	float deltaTime;
+
+	DirectX::XMFLOAT4 AmbientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+	Light Lights[MaxLights];
 };
 
 struct Vertex
 {
 	DirectX::XMFLOAT3 Position;
-	DirectX::XMFLOAT4 Color;
+	DirectX::XMFLOAT3 Normal;
 };
 
 struct MaterialConstants
@@ -64,52 +83,6 @@ public:
 	UINT64 fence = 0;
 };
 
-// Mesh Geometry
-struct MeshGeometry
-{
-	std::string Name;
-
-	Microsoft::WRL::ComPtr<ID3DBlob> VertexBufferCPU = nullptr;;
-	Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferGPU = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferUploader = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3DBlob> IndexBufferCPU;
-	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferGPU = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferUploader = nullptr;
-
-	UINT VertexByteStride = 0;
-	UINT VertexBufferByteSize = 0;
-
-	DXGI_FORMAT IndexBufferFormat = DXGI_FORMAT_R16_UINT;
-	UINT IndexBufferByteSize = 0;
-
-	std::unordered_map<std::string, SubmeshGeometry> DrawArgs;
-
-	D3D12_VERTEX_BUFFER_VIEW VertexBufferView() const
-	{
-		D3D12_VERTEX_BUFFER_VIEW vbv;
-		vbv.BufferLocation = VertexBufferGPU->GetGPUVirtualAddress();
-		vbv.StrideInBytes = VertexByteStride;
-		vbv.SizeInBytes = VertexBufferByteSize;
-		return vbv;
-	}
-
-	D3D12_INDEX_BUFFER_VIEW IndexBufferView() const
-	{
-		D3D12_INDEX_BUFFER_VIEW ibv;
-		ibv.BufferLocation = IndexBufferGPU->GetGPUVirtualAddress();
-		ibv.Format = IndexBufferFormat;
-		ibv.SizeInBytes = IndexBufferByteSize;
-		return ibv;
-	}
-
-	void DisposeUploaders()
-	{
-		VertexBufferUploader = nullptr;
-		IndexBufferUploader = nullptr;
-	}
-};
-
 // Render Item
 struct RenderItem
 {
@@ -121,7 +94,7 @@ public:
 	int ConstantsBufferChangedFlag = NumFrameResource;
 	UINT ObjectConstantsBufferIndex = -1;
 
-	MeshGeometry* Geo = nullptr;
+	LitMeshGeometry* Geo = nullptr;
 	Material* Material = nullptr;
 
 	D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -129,16 +102,6 @@ public:
 	UINT IndexCount = 0;
 	UINT StartIndexLocation = 0;
 	int BaseVertexLocation = 0;
-};
-
-struct Light
-{
-	DirectX::XMFLOAT3 Strength;
-	float FalloffStart;
-	DirectX::XMFLOAT3 Direction;
-	float FalloffEnd;
-	DirectX::XMFLOAT3 Position;
-	float SpotPower;
 };
 
 class LitWavesApp : public BaseApp
@@ -149,16 +112,68 @@ public:
 	LitWavesApp& operator=(const LitWavesApp& rhs) = delete;
 	~LitWavesApp();
 
-protected:
+	virtual bool Initialize() override;
+
+private:
+	virtual void OnResize() override;
+	virtual void Update() override;
+	virtual void Draw() override;
+
+	void UpdateObjectConstantBuffer();
+	void UpdateMainPassConstantBuffer();
 	void UpdateMaterialConstantBuffers();
+	void UpdateWaves();
+	
+	void BuildFrameResource();
+	void BuildMaterials();
+	void BuildRenderItems();
+
+	void BuildRootSignature();
+	void BuildShadersAndInputLayout();
+
+	void BuildLandGeometry();
+	void BuildWavesGeometry();
 
 	void DrawRenderItems(ID3D12GraphicsCommandList* commandList, const std::vector<RenderItem*>& renderItems);
 
-private:
-	void BuildMaterials();
+	void BuildPSOs();
 
 private:
+	DirectX::XMFLOAT3 GetHillsNormal(float x, float z) const;
+	float GetHeight(float x, float z) const;
+	int Rand(int a, int b) const;
+	float RandF() const;
+	float RandF(float a, float b) const;
+
+private:
+	std::vector<std::unique_ptr<FrameResource>> m_frameResources;
 	FrameResource* m_currentFrameResource = nullptr;
+	int m_currentFrameResourceIndex = 0;
 
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature = nullptr;
+
+	std::vector<D3D12_INPUT_ELEMENT_DESC> m_inputLayout;
+
+	PassConstants m_mainPassCB;
+
+	std::vector<std::unique_ptr<RenderItem>> m_allRenderItems;
+	std::vector<RenderItem*> m_opaqueRenderItems;
+	RenderItem* m_wavesRenderItem = nullptr;
+
+	std::unordered_map<std::string, std::unique_ptr<LitMeshGeometry>> m_geometries;
+	std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3DBlob>> m_shaders;
+	std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3D12PipelineState>> m_psos;
 	std::unordered_map<std::string, std::unique_ptr<Material>> m_materials;
+
+	bool m_isWireFrame = false;
+
+	std::unique_ptr<Waves> m_waves;
+
+	DirectX::XMFLOAT4X4 m_view = JRMath::Identity4x4();
+	DirectX::XMFLOAT4X4 m_proj = JRMath::Identity4x4();
+	DirectX::XMFLOAT3 m_eyePosition = { 0.0f, 0.0f, 0.0f };
+
+	float m_theta = 1.5f * DirectX::XM_PI;
+	float m_phi = DirectX::XM_PIDIV4;
+	float m_radius = 5.0f;
 };
