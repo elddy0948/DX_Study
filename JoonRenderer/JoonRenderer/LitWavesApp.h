@@ -14,12 +14,12 @@
 
 struct Light
 {
-	DirectX::XMFLOAT3 Strength;
-	float FalloffStart;
-	DirectX::XMFLOAT3 Direction;
-	float FalloffEnd;
-	DirectX::XMFLOAT3 Position;
-	float SpotPower;
+	DirectX::XMFLOAT3 Strength = { 0.5f, 0.5f, 0.5f };
+	float FalloffStart = 1.0f;
+	DirectX::XMFLOAT3 Direction = { 0.0f, -1.0f, 0.0f };
+	float FalloffEnd = 10.0f;
+	DirectX::XMFLOAT3 Position = { 0.0f, 0.0f, 0.0f };
+	float SpotPower = 64.0f;
 };
 
 struct ObjectConstants
@@ -29,20 +29,20 @@ struct ObjectConstants
 
 struct PassConstants
 {
-	DirectX::XMFLOAT4X4 view;
-	DirectX::XMFLOAT4X4 invView;
-	DirectX::XMFLOAT4X4 proj;
-	DirectX::XMFLOAT4X4 invProj;
-	DirectX::XMFLOAT4X4 viewProj;
-	DirectX::XMFLOAT4X4 invViewProj;
-	DirectX::XMFLOAT3 eyePos;
-	DirectX::XMFLOAT2 renderTargetSize;
-	DirectX::XMFLOAT2 invRenderTargetSize;
+	DirectX::XMFLOAT4X4 view = JRMath::Identity4x4();
+	DirectX::XMFLOAT4X4 invView = JRMath::Identity4x4();
+	DirectX::XMFLOAT4X4 proj = JRMath::Identity4x4();
+	DirectX::XMFLOAT4X4 invProj = JRMath::Identity4x4();
+	DirectX::XMFLOAT4X4 viewProj = JRMath::Identity4x4();
+	DirectX::XMFLOAT4X4 invViewProj = JRMath::Identity4x4();
+	DirectX::XMFLOAT3 eyePos = { 0.0f, 0.0f, 0.0f };
+	DirectX::XMFLOAT2 renderTargetSize = { 0.0f, 0.0f };
+	DirectX::XMFLOAT2 invRenderTargetSize = { 0.0f, 0.0f };
 
-	float nearZ;
-	float farZ;
-	float totalTime;
-	float deltaTime;
+	float nearZ = 0.0f;
+	float farZ = 0.0f;
+	float totalTime = 0.0f;
+	float deltaTime = 0.0f;
 
 	DirectX::XMFLOAT4 AmbientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
 
@@ -138,6 +138,16 @@ private:
 
 	void BuildPSOs();
 
+	virtual void CameraRotateUp() override;
+	virtual void CameraRotateDown() override;
+	virtual void CameraRotateRight() override;
+	virtual void CameraRotateLeft() override;
+
+	virtual void MoveForward() override;
+	virtual void MoveBackward() override;
+	virtual void MoveLeft() override;
+	virtual void MoveRight() override;
+
 private:
 	DirectX::XMFLOAT3 GetHillsNormal(float x, float z) const;
 	float GetHeight(float x, float z) const;
@@ -176,4 +186,7 @@ private:
 	float m_theta = 1.5f * DirectX::XM_PI;
 	float m_phi = DirectX::XM_PIDIV4;
 	float m_radius = 5.0f;
+
+	float m_sunTheta = 1.25f * DirectX::XM_PI;
+	float m_sunPhi = DirectX::XM_PIDIV4;
 };

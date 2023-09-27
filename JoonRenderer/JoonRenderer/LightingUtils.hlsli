@@ -1,3 +1,15 @@
+#ifndef NUM_DIR_LIGHTS
+    #define NUM_DIR_LIGHTS 1
+#endif
+
+#ifndef NUM_POINT_LIGHTS
+    #define NUM_POINT_LIGHTS 0
+#endif
+
+#ifndef NUM_SPOT_LIGHTS
+    #define NUM_SPOT_LIGHTS 0
+#endif
+
 #define MaxLights 16
 
 struct Light
@@ -8,6 +20,48 @@ struct Light
     float FalloffEnd;
     float3 Position;
     float SpotPower;
+};
+
+struct Material
+{
+    float4 DiffuseAlbedo;
+    float3 FresnelR0;
+    float Shininess;
+};
+
+
+cbuffer cbPerObject : register(b0)
+{
+    float4x4 gWorld;
+};
+
+cbuffer cbMaterial : register(b1)
+{
+    float4 gDiffuseAlbedo;
+    float3 gFresnelR0;
+    float gRoughness;
+    float4x4 gMatTransform;
+};
+
+cbuffer cbPass : register(b2)
+{
+    float4x4 gView;
+    float4x4 gInvView;
+    float4x4 gProj;
+    float4x4 gInvProj;
+    float4x4 gViewProj;
+    float4x4 gInvViewProj;
+    float3 gEyePosW;
+    float2 gRenderTargetSize;
+    float2 gInvRenderTargetSize;
+    
+    float gNearZ;
+    float gFarZ;
+    float gTotalTime;
+    float gDeltaTime;
+    
+    float4 gAmbientLight;
+    Light gLights[MaxLights];
 };
 
 float CalcAttenuation(float d, float falloffStart, float falloffEnd)
@@ -22,13 +76,6 @@ float3 SchlickFresnel(float3 R0, float3 normal, float3 lightVec)
     float3 reflectPercent = R0 + (1.0f - R0) * (f0 * f0 * f0 * f0 * f0);
     return reflectPercent;
 }
-
-struct Material
-{
-    float4 DiffuseAlbedo;
-    float3 FresnelR0;
-    float Shininess;
-};
 
 float3 BlinnPhong(float3 lightStrength, float3 lightVec, float3 normal, float3 toEye, Material mat)
 {

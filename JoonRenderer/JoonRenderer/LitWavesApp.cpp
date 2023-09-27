@@ -165,6 +165,12 @@ void LitWavesApp::UpdateMainPassConstantBuffer()
 	m_mainPassCB.farZ = 1000.0f;
 	m_mainPassCB.totalTime = Win32Application::GetTimer().GameTime();
 	m_mainPassCB.deltaTime = Win32Application::GetTimer().DeltaTime();
+	m_mainPassCB.AmbientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
+
+	XMVECTOR lightDir = -JRMath::SphericalToCartesian(1.0f, m_sunTheta, m_sunPhi);
+
+	XMStoreFloat3(&m_mainPassCB.Lights[0].Direction, lightDir);
+	m_mainPassCB.Lights[0].Strength = { 1.0f, 1.0f, 0.9f };
 
 	auto currentPassCB = m_currentFrameResource->PassConstantsBuffer.get();
 	currentPassCB->CopyData(0, m_mainPassCB);
@@ -200,6 +206,7 @@ void LitWavesApp::UpdateWaves()
 
 	if ((Win32Application::GetTimer().GameTime() - t_base) >= 0.25f)
 	{
+		t_base += 0.25f;
 		int i = Rand(4, m_waves->RowCount() - 5);
 		int j = Rand(4, m_waves->ColumnCount() - 5);
 
@@ -239,7 +246,8 @@ void LitWavesApp::BuildMaterials()
 	auto grass = std::make_unique<Material>();
 	grass->Name = "grass";
 	grass->ConstantBufferIndex = 0;
-	grass->DiffuseAlbedo = XMFLOAT4(0.2f, 0.6f, 0.6f, 1.0f);
+	grass->DiffuseAlbedo = XMFLOAT4(0.2f, 0.6f, 0.2f, 1.0f);
+	grass->FresnelR0 = XMFLOAT3(0.01f, 0.01f, 0.01f);
 	grass->Roughness = 0.125f;
 
 	auto water = std::make_unique<Material>();
@@ -259,6 +267,7 @@ void LitWavesApp::BuildRenderItems()
 	waveRenderItem->World = JRMath::Identity4x4();
 	waveRenderItem->ObjectConstantsBufferIndex = 0;
 	waveRenderItem->Geo = m_geometries["wave_geo"].get();
+	waveRenderItem->Material = m_materials["water"].get();
 	waveRenderItem->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	waveRenderItem->IndexCount = waveRenderItem->Geo->DrawArgs["grid"].IndexCount;
 	waveRenderItem->StartIndexLocation = waveRenderItem->Geo->DrawArgs["grid"].StartIndexLocation;
@@ -270,12 +279,13 @@ void LitWavesApp::BuildRenderItems()
 
 	auto landRenderItem = std::make_unique<RenderItem>();
 	landRenderItem->World = JRMath::Identity4x4();
-	landRenderItem->ObjectConstantsBufferIndex = 0;
-	landRenderItem->Geo = m_geometries["LandGeo"].get();
+	landRenderItem->ObjectConstantsBufferIndex = 1;
+	landRenderItem->Geo = m_geometries["land_geo"].get();
+	landRenderItem->Material = m_materials["grass"].get();
 	landRenderItem->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	landRenderItem->IndexCount = landRenderItem->Geo->DrawArgs["LandGrid"].IndexCount;
-	landRenderItem->StartIndexLocation = landRenderItem->Geo->DrawArgs["LandGrid"].StartIndexLocation;
-	landRenderItem->BaseVertexLocation = landRenderItem->Geo->DrawArgs["LandGrid"].BaseVertexLocation;
+	landRenderItem->IndexCount = landRenderItem->Geo->DrawArgs["grid"].IndexCount;
+	landRenderItem->StartIndexLocation = landRenderItem->Geo->DrawArgs["grid"].StartIndexLocation;
+	landRenderItem->BaseVertexLocation = landRenderItem->Geo->DrawArgs["grid"].BaseVertexLocation;
 
 	m_opaqueRenderItems.push_back(landRenderItem.get());
 	m_allRenderItems.push_back(std::move(landRenderItem));
@@ -312,7 +322,7 @@ void LitWavesApp::BuildShadersAndInputLayout()
 	m_inputLayout =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
 	};
 }
 
@@ -340,7 +350,7 @@ void LitWavesApp::BuildLandGeometry()
 	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
 	auto geo = std::make_unique<LitMeshGeometry>();
-	geo->Name = "LandGeo";
+	geo->Name = "land_geo";
 
 	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
 	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
@@ -362,9 +372,9 @@ void LitWavesApp::BuildLandGeometry()
 	submesh.StartIndexLocation = 0;
 	submesh.BaseVertexLocation = 0;
 
-	geo->DrawArgs["LandGrid"] = submesh;
+	geo->DrawArgs["grid"] = submesh;
 
-	m_geometries["LandGeo"] = std::move(geo);
+	m_geometries["land_geo"] = std::move(geo);
 }
 
 void LitWavesApp::BuildWavesGeometry()
@@ -399,11 +409,7 @@ void LitWavesApp::BuildWavesGeometry()
 	geo->Name = "wave_geo";
 
 	geo->VertexBufferCPU = nullptr;
-	geo->IndexBufferCPU = nullptr;
-
 	geo->VertexBufferGPU = nullptr;
-	geo->IndexBufferGPU = nullptr;
-
 
 	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
 	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
@@ -517,4 +523,60 @@ float LitWavesApp::RandF() const
 float LitWavesApp::RandF(float a, float b) const
 {
 	return a + RandF() * (b - a);
+}
+
+void LitWavesApp::CameraRotateLeft()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixRotationY(0.1f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void LitWavesApp::CameraRotateRight()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixRotationY(-0.1f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void LitWavesApp::CameraRotateUp()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixRotationX(0.1f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void LitWavesApp::CameraRotateDown()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixRotationX(-0.1f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void LitWavesApp::MoveForward()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixTranslation(0.0f, 0.0f, -1.0f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void LitWavesApp::MoveBackward()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixTranslation(0.0f, 0.0f, 1.0f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void LitWavesApp::MoveLeft()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixTranslation(1.0f, 0.0f, 0.0f);
+	XMStoreFloat4x4(&m_view, view);
+}
+
+void LitWavesApp::MoveRight()
+{
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	view *= XMMatrixTranslation(-1.0f, 0.0f, 0.0f);
+	XMStoreFloat4x4(&m_view, view);
 }

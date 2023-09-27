@@ -24,4 +24,13 @@ public:
 		XMVECTOR det = XMMatrixDeterminant(A);
 		return XMMatrixTranspose(XMMatrixInverse(&det, A));
 	}
+
+	static XMVECTOR SphericalToCartesian(float radius, float theta, float phi)
+	{
+		return DirectX::XMVectorSet(
+			radius * sinf(phi) * cosf(theta),
+			radius * cosf(phi),
+			radius * sinf(phi) * sinf(theta),
+			1.0f);
+	}
 };

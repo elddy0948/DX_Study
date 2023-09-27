@@ -1,4 +1,11 @@
-#include "LitWavesVS.hlsl"
+#include "LightingUtils.hlsli"
+
+struct VertexOut
+{
+    float4 PosH : SV_POSITION;
+    float3 PosW : POSITION;
+    float3 NormalW : NORMAL;
+};
 
 float4 main(VertexOut pin) : SV_Target
 {
@@ -15,6 +22,6 @@ float4 main(VertexOut pin) : SV_Target
     float4 litColor = ambient + directLight;
     
     litColor.a = gDiffuseAlbedo.a;
-    
+   
     return litColor;
 }
