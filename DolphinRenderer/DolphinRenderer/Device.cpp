@@ -3,9 +3,13 @@
 Device::Device() {
 	mFactory = nullptr;
 	mDevice = nullptr;
+	m_CmdObjects = nullptr;
 }
 
 Device::~Device() {
+	delete m_CmdObjects;
+
+	if (mFence) mFence->Release();
 	if (mDevice) mDevice->Release();
 	if (mFactory) mFactory->Release();
 
@@ -25,6 +29,10 @@ bool Device::initialize() {
 	CreateFence();
 	GetDescriptorSize();
 	CheckMultisampleQualityLevels();
+
+	/* Commad objects initialize */
+	m_CmdObjects = new CommandObjects(this);
+	m_CmdObjects->Initialize();
 
 	return true;
 }

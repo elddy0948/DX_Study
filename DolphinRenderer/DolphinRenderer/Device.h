@@ -4,6 +4,8 @@
 
 #include "Headers.h"
 
+#include "CommandObjects.h"
+
 class Device {
 public:
 	Device();
@@ -11,6 +13,7 @@ public:
 
 public:
 	bool initialize();
+	ID3D12Device* GetGPU() { return mDevice; }
 
 private:
 	void GetDescriptorSize();
@@ -27,6 +30,8 @@ private:
 #endif
 
 	ID3D12Fence* mFence = nullptr;
+
+	CommandObjects* m_CmdObjects;
 
 	/* Descriptor sizes */
 	UINT mRTVDescriptorSize = 0;

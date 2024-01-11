@@ -127,10 +127,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CommandObjects.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="Headers.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CommandObjects.cpp" />
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
