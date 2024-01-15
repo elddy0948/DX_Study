@@ -15,24 +15,30 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Device.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Headers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CommandObjects.h">
+    <ClInclude Include="BaseApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Win32App.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TriangleApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Device.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CommandObjects.cpp">
+    <ClCompile Include="BaseApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32App.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TriangleApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

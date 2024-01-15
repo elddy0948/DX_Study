@@ -1,85 +1,56 @@
 #include "BaseApp.h"
 
-BaseApp::BaseApp() {
-	m_hwnd = 0;
-	m_hInstance = GetModuleHandle(nullptr);
+BaseApp::BaseApp(UINT width, UINT height, std::wstring name) :
+	m_width(width),
+	m_height(height),
+	m_title(name) {
+
+	m_aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 }
 
-BaseApp::~BaseApp() {
+BaseApp::~BaseApp() {}
 
-}
-
-LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	switch (msg) {
-	case WM_LBUTTONDOWN:
-		MessageBox(0, L"Hello, World", L"Hello", MB_OK);
-		return 0;
-	case WM_KEYDOWN:
-		if (wParam == VK_ESCAPE)
-			DestroyWindow(hWnd);
-		return 0;
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		return 0;
-	}
-
-	return DefWindowProc(hWnd, msg, wParam, lParam);
-}
-
-void BaseApp::Initialize() {
-	WNDCLASS wc = {};
-	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc = WndProc;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = m_hInstance;
-	wc.hIcon = LoadIcon(0, IDI_APPLICATION);
-	wc.hCursor = LoadCursor(0, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-	wc.lpszMenuName = 0;
-	wc.lpszClassName = L"BaseWndClass";
-
-	if (!RegisterClass(&wc)) {
-		MessageBox(0, L"RegisterClass FAILED", 0, 0);
-		return;
-	}
-
-	m_hwnd = CreateWindow(
-		L"BaseWndClass",
-		L"Win32Basic",
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		0,
-		0,
-		m_hInstance,
-		0);
-
-	if (m_hwnd == 0) {
-		MessageBox(0, L"Create Window FAILED", 0, 0);
-		return;
-	}
-
-	ShowWindow(m_hwnd, SW_SHOW);
-	UpdateWindow(m_hwnd);
-
-	std::cout << m_hInstance;
-}
-
-int BaseApp::Run() {
-	MSG msg = { 0 };
-	BOOL bRet = 1;
-
-	while (msg.message != WM_QUIT) {
-		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		else {
-			// Game Loop...
+_Use_decl_annotations_
+void BaseApp::ParseCommandLineArgs(WCHAR* argv[], int argc) {
+	for (int i = 1; i < argc; ++i) {
+		if (_wcsnicmp(argv[i], L"-warp", wcslen(argv[i])) == 0 || _wcsnicmp(argv[i], L"/warp", wcslen(argv[i])) == 0) {
+			m_useWarpDevice = true;
+			m_title = m_title + L" (WARP)";
 		}
 	}
-	return (int)msg.wParam;
+}
+
+_Use_decl_annotations_
+void BaseApp::GetHardwareAdapter(IDXGIFactory1* pFactory, IDXGIAdapter1** ppAdapter, bool requestHighPerformanceAdapter) {
+	*ppAdapter = nullptr;
+
+	IDXGIAdapter1* adapter;
+	IDXGIFactory6* factory6;
+
+	if (SUCCEEDED(pFactory->QueryInterface(__uuidof(factory6), (void**)&factory6))) {
+		for (UINT adapterIndex = 0;
+			SUCCEEDED(factory6->EnumAdapterByGpuPreference(adapterIndex, requestHighPerformanceAdapter == true ? DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE : DXGI_GPU_PREFERENCE_UNSPECIFIED, __uuidof(adapter), (void**)&adapter));
+			++adapterIndex) {
+			DXGI_ADAPTER_DESC1 desc;
+			adapter->GetDesc1(&desc);
+
+			if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) { continue; }
+			if (SUCCEEDED(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr))) { break; }
+		}
+	}
+
+	if (adapter == nullptr) {
+		for (UINT adapterIndex = 0; SUCCEEDED(pFactory->EnumAdapters1(adapterIndex, &adapter)), ++adapterIndex) {
+			DXGI_ADAPTER_DESC1 desc;
+			adapter->GetDesc1(&desc);
+
+			if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) { continue; }
+			if (SUCCEEDED(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr))) { break; }
+		}
+	}
+
+	*ppAdapter = adapter;
+
+	if (adapter) adapter->Release();
+	if (factory6) factory6->Release();
 }

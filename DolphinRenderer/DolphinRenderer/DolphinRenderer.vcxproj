@@ -104,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\DirectX-Headers\include\directx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -118,6 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\DirectX-Headers\include\directx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,14 +129,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CommandObjects.h" />
-    <ClInclude Include="Device.h" />
+    <ClInclude Include="BaseApp.h" />
     <ClInclude Include="Headers.h" />
+    <ClInclude Include="TriangleApp.h" />
+    <ClInclude Include="Win32App.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CommandObjects.cpp" />
-    <ClCompile Include="Device.cpp" />
+    <ClCompile Include="BaseApp.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="TriangleApp.cpp" />
+    <ClCompile Include="Win32App.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
