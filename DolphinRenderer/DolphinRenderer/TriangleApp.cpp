@@ -15,11 +15,16 @@ void TriangleApp::OnUpdate() {
 }
 
 void TriangleApp::OnRender() {
-
+	PopulateCommandList();
+	ID3D12CommandList* ppCommandLists[] = { m_commandList };
+	m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	ThrowIfFailed(m_swapchain->Present(1, 0));
+	WaitForPreviousFrame();
 }
 
 void TriangleApp::OnDestroy() {
-
+	WaitForPreviousFrame();
+	CloseHandle(m_fenceEvent);
 }
 
 void TriangleApp::LoadPipeline() {
@@ -99,4 +104,42 @@ void TriangleApp::LoadPipeline() {
 	ThrowIfFailed(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof(m_commandAllocator), (void**)&m_commandAllocator));
 }
 
+void TriangleApp::LoadAssets() {
+}
 
+void TriangleApp::PopulateCommandList() {
+	ThrowIfFailed(m_commandAllocator->Reset());
+	ThrowIfFailed(m_commandList->Reset(m_commandAllocator, m_pipelineState));
+
+	m_commandList->SetGraphicsRootSignature(m_rootSignature);
+	m_commandList->RSSetViewports(1, &m_viewport);
+	m_commandList->RSSetScissorRects(1, &m_scissorRect);
+
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart(), m_frameIndex, m_rtvDescriptorSize);
+	m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+
+	const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
+	m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
+	m_commandList->DrawInstanced(3, 1, 0, 0);
+
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+	ThrowIfFailed(m_commandList->Close());
+}
+
+void TriangleApp::WaitForPreviousFrame() {
+	const UINT64 fence = m_fenceValue;
+	ThrowIfFailed(m_commandQueue->Signal(m_fence, fence));
+	m_fenceValue++;
+
+	if (m_fence->GetCompletedValue() < fence) {
+		ThrowIfFailed(m_fence->SetEventOnCompletion(fence, m_fenceEvent));
+		WaitForSingleObject(m_fenceEvent, INFINITE);
+	}
+
+	m_frameIndex = m_swapchain->GetCurrentBackBufferIndex();
+}
