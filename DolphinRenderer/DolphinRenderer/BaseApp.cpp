@@ -4,7 +4,9 @@ BaseApp::BaseApp(UINT width, UINT height, std::wstring name) :
 	m_width(width),
 	m_height(height),
 	m_title(name) {
-
+	WCHAR assetsPath[512];
+	GetAssetsPath(assetsPath, _countof(assetsPath));
+	m_assetPath = assetsPath;
 	m_aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 }
 
@@ -20,12 +22,16 @@ void BaseApp::ParseCommandLineArgs(WCHAR* argv[], int argc) {
 	}
 }
 
+std::wstring BaseApp::GetAssetFullPath(LPCWSTR assetName) {
+	return m_assetPath + assetName;
+}
+
 _Use_decl_annotations_
 void BaseApp::GetHardwareAdapter(IDXGIFactory1* pFactory, IDXGIAdapter1** ppAdapter, bool requestHighPerformanceAdapter) {
 	*ppAdapter = nullptr;
 
-	IDXGIAdapter1* adapter;
-	IDXGIFactory6* factory6;
+	IDXGIAdapter1* adapter = nullptr;
+	IDXGIFactory6* factory6 = nullptr;
 
 	if (SUCCEEDED(pFactory->QueryInterface(__uuidof(factory6), (void**)&factory6))) {
 		for (UINT adapterIndex = 0;
@@ -40,7 +46,7 @@ void BaseApp::GetHardwareAdapter(IDXGIFactory1* pFactory, IDXGIAdapter1** ppAdap
 	}
 
 	if (adapter == nullptr) {
-		for (UINT adapterIndex = 0; SUCCEEDED(pFactory->EnumAdapters1(adapterIndex, &adapter)), ++adapterIndex) {
+		for (UINT adapterIndex = 0; SUCCEEDED(pFactory->EnumAdapters1(adapterIndex, &adapter)); ++adapterIndex) {
 			DXGI_ADAPTER_DESC1 desc;
 			adapter->GetDesc1(&desc);
 
