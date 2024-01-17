@@ -44,6 +44,9 @@ int Win32App::Run(BaseApp* pApp, HINSTANCE hInstance, int nCmdShow) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
+		else {
+			pApp->OnRender();
+		}
 	}
 
 	pApp->OnDestroy();

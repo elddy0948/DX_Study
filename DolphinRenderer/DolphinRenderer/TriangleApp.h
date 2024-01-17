@@ -50,9 +50,9 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView = {};
 
 	UINT m_frameIndex;
-	HANDLE m_fenceEvent;
+	HANDLE m_fenceEvent = nullptr;
 	ID3D12Fence* m_fence = nullptr;
-	UINT64 m_fenceValue;
+	UINT64 m_fenceValue = 0;
 };
 
 

@@ -40,7 +40,7 @@ void TriangleApp::LoadPipeline() {
 	}
 #endif
 
-	IDXGIFactory4* factory;
+	IDXGIFactory4* factory = NULL;
 	ThrowIfFailed(CreateDXGIFactory2(dxgiFactoryFlags, __uuidof(factory), (void**)&factory));
 
 	if (m_useWarpDevice) {
@@ -49,16 +49,17 @@ void TriangleApp::LoadPipeline() {
 		ThrowIfFailed(D3D12CreateDevice(warpAdapter, D3D_FEATURE_LEVEL_11_0, __uuidof(m_device), (void**)&m_device));
 	}
 	else {
+		// TODO: - fix hardware adapter access violation error
 		IDXGIAdapter1* hardwareAdapter;
 		GetHardwareAdapter(factory, &hardwareAdapter);
-		ThrowIfFailed(D3D12CreateDevice(hardwareAdapter, D3D_FEATURE_LEVEL_11_0, __uuidof(m_device), (void**)&m_device));
+		ThrowIfFailed(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, __uuidof(m_device), (void**)&m_device));
 	}
 
 	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	
-	ThrowIfFailed(m_device->CreateCommandQueue(&queueDesc, __uuidof(m_commandQueue), (void**)&m_commandQueue));
+	ThrowIfFailed(m_device->CreateCommandQueue(&queueDesc, __uuidof(m_commandQueue), (void**)(&m_commandQueue)));
 
 	DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
 
@@ -76,9 +77,12 @@ void TriangleApp::LoadPipeline() {
 
 	ThrowIfFailed(factory->MakeWindowAssociation(Win32App::GetHwnd(), DXGI_MWA_NO_ALT_ENTER));
 
-	memcpy_s(m_swapchain, sizeof(m_swapchain), swapchain, sizeof(swapchain));
+	swapchain->QueryInterface(__uuidof(m_swapchain), (void**)&m_swapchain);
 
 	m_frameIndex = m_swapchain->GetCurrentBackBufferIndex();
+
+	swapchain->Release();
+	swapchain = nullptr;
 
 	/* Descriptor heaps */
 	{
@@ -115,8 +119,8 @@ void TriangleApp::LoadAssets() {
 		ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
 		ThrowIfFailed(m_device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), __uuidof(m_rootSignature), (void**)&m_rootSignature));
 
-		signature->Release();
-		error->Release();
+		if (signature) signature->Release();
+		if (error) error->Release();
 	}
 
 	{
@@ -128,9 +132,8 @@ void TriangleApp::LoadAssets() {
 #else
 		UINT compileFlags = 0;
 #endif
-
-		ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"shaders.hlsl").c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr));
-		ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"shaders.hlsl").c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr));
+		ThrowIfFailed(D3DCompileFromFile(L"VertexShader.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr));
+		ThrowIfFailed(D3DCompileFromFile(L"PixelShader.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr));
 
 		D3D12_INPUT_ELEMENT_DESC inputElementDescs[] = {
 			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
@@ -138,11 +141,14 @@ void TriangleApp::LoadAssets() {
 		};
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+
 		psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
 		psoDesc.pRootSignature = m_rootSignature;
 		psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader);
 		psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader);
 		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 		psoDesc.DepthStencilState.DepthEnable = FALSE;
 		psoDesc.DepthStencilState.StencilEnable = FALSE;
 		psoDesc.SampleMask = UINT_MAX;
@@ -150,10 +156,11 @@ void TriangleApp::LoadAssets() {
 		psoDesc.NumRenderTargets = 1;
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 		psoDesc.SampleDesc.Count = 1;
-		ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, __uuidof(m_pipelineState), (void**)&m_pipelineState));
 
-		vertexShader->Release();
-		pixelShader->Release();
+		ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, __uuidof(m_pipelineState), (void**)(&m_pipelineState)));
+
+		if (vertexShader) vertexShader->Release();
+		if (pixelShader) pixelShader->Release();
 	}
 
 	/* Create command list */
