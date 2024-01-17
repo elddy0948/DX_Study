@@ -117,6 +117,11 @@ LRESULT Win32App::WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
+	case WM_GETMINMAXINFO:
+		/* prevent too small window */
+		((MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
+		((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
+		return 0;
 	}
 
 	return DefWindowProc(hWnd, message, wParam, lParam);
