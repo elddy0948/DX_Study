@@ -56,7 +56,4 @@ void BaseApp::GetHardwareAdapter(IDXGIFactory1* pFactory, IDXGIAdapter1** ppAdap
 	}
 
 	*ppAdapter = adapter;
-
-	if (adapter) adapter->Release();
-	if (factory6) factory6->Release();
 }

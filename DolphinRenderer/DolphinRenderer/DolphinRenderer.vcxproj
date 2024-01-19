@@ -130,6 +130,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BaseApp.h" />
+    <ClInclude Include="DolphinException.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="Headers.h" />
     <ClInclude Include="TriangleApp.h" />
@@ -137,6 +138,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BaseApp.cpp" />
+    <ClCompile Include="DolphinException.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TriangleApp.cpp" />

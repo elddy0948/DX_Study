@@ -109,7 +109,7 @@ LRESULT Win32App::WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 		}
 		return 0;
 	case WM_CREATE:
-		{
+		{	
 			LPCREATESTRUCT pCreateStruct = reinterpret_cast<LPCREATESTRUCT>(lParam);
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreateStruct->lpCreateParams));
 		}

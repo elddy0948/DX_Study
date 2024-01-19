@@ -49,10 +49,9 @@ void TriangleApp::LoadPipeline() {
 		ThrowIfFailed(D3D12CreateDevice(warpAdapter, D3D_FEATURE_LEVEL_11_0, __uuidof(m_device), (void**)&m_device));
 	}
 	else {
-		// TODO: - fix hardware adapter access violation error
 		IDXGIAdapter1* hardwareAdapter;
 		GetHardwareAdapter(factory, &hardwareAdapter);
-		ThrowIfFailed(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, __uuidof(m_device), (void**)&m_device));
+		ThrowIfFailed(D3D12CreateDevice(hardwareAdapter, D3D_FEATURE_LEVEL_11_0, __uuidof(m_device), (void**)&m_device));
 	}
 
 	D3D12_COMMAND_QUEUE_DESC queueDesc = {};

@@ -9,7 +9,13 @@
 
 _Use_decl_annotations_
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
-	TriangleApp app(800, 600, L"Triangle");
+	try {
+		TriangleApp app(800, 600, L"Triangle");
 
-	return Win32App::Run(&app, hInstance, nCmdShow);
+		return Win32App::Run(&app, hInstance, nCmdShow);
+	}
+	catch (DolphinException& e) {
+		MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
+		return 0;
+	}
 }
