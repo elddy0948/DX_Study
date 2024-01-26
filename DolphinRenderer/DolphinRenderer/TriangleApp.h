@@ -55,5 +55,4 @@ private:
 	UINT64 m_fenceValue = 0;
 };
 
-
 #endif /* !TRIANGLE_APP_H */

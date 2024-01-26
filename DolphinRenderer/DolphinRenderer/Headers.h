@@ -4,7 +4,7 @@
 
 /* Windows */
 #include <Windows.h>
-//#include <wrl.h>
+#include <wrl.h>
 #include <comdef.h>
 
 /* DirectX */
